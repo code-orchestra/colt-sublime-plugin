@@ -1,0 +1,7 @@
+    {  
+        "id": "tools",  
+        "children":  
+        [  
+            { "command": "run_with_colt" }  
+        ]  
+    }   
