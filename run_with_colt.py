@@ -1,5 +1,6 @@
 import sublime, sublime_plugin
 import os.path
+import subprocess
 
 from xml.etree.ElementTree import Element, SubElement, tostring, parse
 
@@ -37,7 +38,7 @@ class RunWithColtCommand(sublime_plugin.WindowCommand):
                         settings = sublime.load_settings("Preferences.sublime-settings")
                         settings.set("coltPath", inputPath)
                         sublime.save_settings("Preferences.sublime-settings")
-                        run()
+                        self.run()
                 else :
                         sublime.error_message("COLT path specified is invalid")
 
@@ -74,7 +75,14 @@ class RunWithColtCommand(sublime_plugin.WindowCommand):
 
         def runCOLT(self, settings):
                 coltPath = settings.get("coltPath")
-                # TODO: implement
+
+                if (os.name == "posix") :
+                        # Mac, I hope
+                        subprocess.Popen(["open", "-n", "-a", coltPath])
+                else :
+                        # Windows, I suppose
+                        # TODO: implement
+                        print "Unimplemented"                        
 
         def exportProject(self):
                 mainDocumentPath = self.window.active_view().file_name()
