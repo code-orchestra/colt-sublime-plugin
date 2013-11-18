@@ -5,8 +5,9 @@ from xml.etree.ElementTree import Element, SubElement, tostring
 
 class RunWithColtCommand(sublime_plugin.TextCommand):
         def run(self, edit):
-                mainDocument = self.view.file_name()
-                basedir = os.path.dirname(mainDocument) # TODO: ask user for base dir?
+                mainDocumentPath = self.view.file_name()
+                mainDocumentName = os.path.splitext(os.path.basename(mainDocumentPath))[0]
+                basedir = os.path.dirname(mainDocumentPath) # TODO: ask user for base dir?
 
                 settings = sublime.load_settings("Preferences.sublime-settings")
                 if not settings.has("coltPath") :
@@ -15,12 +16,10 @@ class RunWithColtCommand(sublime_plugin.TextCommand):
 
                 coltPath = settings.get("coltPath")
 
-                print coltPath
-
                 # Root
                 rootElement = Element("xml")
 
-                rootElement.set("projectName", mainDocument) # TODO: file name only
+                rootElement.set("projectName", mainDocumentName)
                 rootElement.set("projectType", "JS")
 
                 # Paths
@@ -31,7 +30,7 @@ class RunWithColtCommand(sublime_plugin.TextCommand):
 
                 # Build
                 buildElement = SubElement(rootElement, "build")
-                self.createElement("main-document", mainDocument, buildElement)
+                self.createElement("main-document", mainDocumentPath, buildElement)
                 self.createElement("use-custom-output-path", "false", buildElement)
                 self.createElement("out-path", "", buildElement)
 
@@ -53,7 +52,10 @@ class RunWithColtCommand(sublime_plugin.TextCommand):
                 self.createElement("live-html-edit", "true", innerLiveElement)
                 self.createElement("disable-in-minified", "true", innerLiveElement)
 
-                print tostring(rootElement)
+                coltProjectFilePath = basedir + os.sep + mainDocumentName + ".colt"
+                coltProjectFile = open(coltProjectFilePath, "w")
+                coltProjectFile.write(tostring(rootElement))
+                coltProjectFile.close()
                 
 
         def createElement(self, name, value, parentElement):
