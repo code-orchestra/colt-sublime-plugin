@@ -4,17 +4,34 @@ import os.path
 from xml.etree.ElementTree import Element, SubElement, tostring
 
 class RunWithColtCommand(sublime_plugin.TextCommand):
+        
         def run(self, edit):
-                mainDocumentPath = self.view.file_name()
-                mainDocumentName = os.path.splitext(os.path.basename(mainDocumentPath))[0]
-                basedir = os.path.dirname(mainDocumentPath) # TODO: ask user for base dir?
-
                 settings = sublime.load_settings("Preferences.sublime-settings")
                 if not settings.has("coltPath") :
                         sublime.error_message("COLT path is not specified, go to Preferences -> COLT")
                         return
 
+                # Export COLT project
+                coltProjectFilePath = self.exportProject()
+
+                # Add project to workset file
+                self.addToWorkingSet(coltProjectFilePath)
+
+                # Run COLT
+                self.runCOLT(settings)
+
+        def addToWorkingSet(self, projectPath):
+                workingSetFilePath = os.path.expanduser("~") + os.sep + ".colt" + os.sep + "workingset.xml"
+                # TODO: implement
+
+        def runCOLT(self, settings):
                 coltPath = settings.get("coltPath")
+                # TODO: implement
+
+        def exportProject(self):
+                mainDocumentPath = self.view.file_name()
+                mainDocumentName = os.path.splitext(os.path.basename(mainDocumentPath))[0]
+                basedir = os.path.dirname(mainDocumentPath) # TODO: ask user for base dir?
 
                 # Root
                 rootElement = Element("xml")
@@ -56,7 +73,8 @@ class RunWithColtCommand(sublime_plugin.TextCommand):
                 coltProjectFile = open(coltProjectFilePath, "w")
                 coltProjectFile.write(tostring(rootElement))
                 coltProjectFile.close()
-                
+
+                return coltProjectFilePath
 
         def createElement(self, name, value, parentElement):
                 element = SubElement(parentElement, name)
