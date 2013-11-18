@@ -1,7 +1,7 @@
 import sublime, sublime_plugin
 import os.path
 
-from xml.etree.ElementTree import Element, SubElement, tostring
+from xml.etree.ElementTree import Element, SubElement, tostring, parse
 
 class RunWithColtCommand(sublime_plugin.TextCommand):
         
@@ -20,9 +20,35 @@ class RunWithColtCommand(sublime_plugin.TextCommand):
                 # Run COLT
                 self.runCOLT(settings)
 
-        def addToWorkingSet(self, projectPath):
+        def addToWorkingSet(self, newProjectPath):
                 workingSetFilePath = os.path.expanduser("~") + os.sep + ".colt" + os.sep + "workingset.xml"
-                # TODO: implement
+                projectsList = []
+
+                # Populate projects list
+                if os.path.exists(workingSetFilePath) :
+                        workingSetElement = parse(workingSetFilePath).getroot()
+                        for projectElement in workingSetElement :
+                                projectPath = projectElement.attrib["path"]
+                                if projectPath :
+                                        projectsList.append(projectPath)
+
+                # Remove project path from the list
+                projectsList = filter(lambda projectPath : projectPath != newProjectPath, projectsList)
+
+                # Push new project
+                projectsList.insert(0, newProjectPath)
+
+                # Save the list
+                workingSetElement = Element("workingset")
+                workingSetElement.set("openRecent", "true")
+
+                for projectPath in projectsList :
+                        projectElement = SubElement(workingSetElement, "project")
+                        projectElement.set("path", projectPath)
+
+                workingSetFile = open(workingSetFilePath, "w")
+                workingSetFile.write(tostring(workingSetElement))
+                workingSetFile.close()
 
         def runCOLT(self, settings):
                 coltPath = settings.get("coltPath")
