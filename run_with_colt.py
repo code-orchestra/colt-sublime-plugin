@@ -3,13 +3,25 @@ import os.path
 
 from xml.etree.ElementTree import Element, SubElement, tostring, parse
 
-class RunWithColtCommand(sublime_plugin.TextCommand):
+class RunWithColtCommand(sublime_plugin.WindowCommand):
         
-        def run(self, edit):
+        def run(self):
                 settings = sublime.load_settings("Preferences.sublime-settings")
-                if not settings.has("coltPath") :
-                        sublime.error_message("COLT path is not specified, go to Preferences -> COLT")
+                if not settings.has("coltPath") :                        
+                        sublime.error_message("COLT path is not specified, please enter the path")
+                        self.window.show_input_panel("COLT Path:", "", self.onCOLTPathInput, None, None)
                         return
+                
+                settings = sublime.load_settings("Preferences.sublime-settings")
+                coltPath = settings.get("coltPath")
+                
+                if not os.path.exists(coltPath) :
+                        sublime.error_message("COLT path specified is invalid, please enter the correct path")
+                        self.window.show_input_panel("COLT Path:", "", self.onCOLTPathInput, None, None)
+                        return
+
+                settings = sublime.load_settings("Preferences.sublime-settings")
+                coltPath = settings.get("coltPath")
 
                 # Export COLT project
                 coltProjectFilePath = self.exportProject()
@@ -19,6 +31,16 @@ class RunWithColtCommand(sublime_plugin.TextCommand):
 
                 # Run COLT
                 self.runCOLT(settings)
+
+        def onCOLTPathInput(self, inputPath):
+                if inputPath and os.path.exists(inputPath) :
+                        settings = sublime.load_settings("Preferences.sublime-settings")
+                        settings.set("coltPath", inputPath)
+                        sublime.save_settings("Preferences.sublime-settings")
+                        run()
+                else :
+                        sublime.error_message("COLT path specified is invalid")
+
 
         def addToWorkingSet(self, newProjectPath):
                 workingSetFilePath = os.path.expanduser("~") + os.sep + ".colt" + os.sep + "workingset.xml"
@@ -55,7 +77,7 @@ class RunWithColtCommand(sublime_plugin.TextCommand):
                 # TODO: implement
 
         def exportProject(self):
-                mainDocumentPath = self.view.file_name()
+                mainDocumentPath = self.window.active_view().file_name()
                 mainDocumentName = os.path.splitext(os.path.basename(mainDocumentPath))[0]
                 basedir = os.path.dirname(mainDocumentPath) # TODO: ask user for base dir?
 
