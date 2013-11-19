@@ -33,6 +33,36 @@ class RunWithColtCommand(sublime_plugin.WindowCommand):
                 # Run COLT
                 self.runCOLT(settings)
 
+        def getProjectWorkingDir(self, projectPath): 
+                storageFilePath = os.path.expanduser("~") + os.sep + ".colt" + os.sep + "storage.xml"
+
+                if not os.path.exists(storageFilePath) :
+                        return None
+
+                projectSubDir = None
+                storageRootElement = parse(storageFilePath).getroot()
+                for storageElement in storageRootElement :
+                        if storageElement.attrib["path"] == projectPath :
+                                projectSubDir = storageElement.attrib["subDir"]
+                                break
+
+                if projectSubDir is None :
+                        return None
+
+                return os.path.expanduser("~") + os.sep + ".colt" + os.sep + "storage" + os.sep + projectSubDir
+
+        def getRPCPortForProject(self, projectPath):
+                storageDir = self.getProjectWorkingDir(projectPath)
+                if storageDir is None :
+                        return None
+
+                rpcInfoFilePath = storageDir + os.sep + "rpc.info"
+                if not os.path.exists(rpcInfoFilePath) :
+                        return None
+
+                with open(rpcInfoFilePath, "r") as rpcInfoFile :
+                        return rpcInfoFile.read().split(":")[1]
+
         def onCOLTPathInput(self, inputPath):
                 if inputPath and os.path.exists(inputPath) :
                         settings = sublime.load_settings("Preferences.sublime-settings")
