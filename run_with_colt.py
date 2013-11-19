@@ -1,6 +1,8 @@
 import sublime, sublime_plugin
 import os.path
 import subprocess
+import urllib2
+import json
 
 from xml.etree.ElementTree import Element, SubElement, tostring, parse
 
@@ -32,6 +34,19 @@ class RunWithColtCommand(sublime_plugin.WindowCommand):
 
                 # Run COLT
                 self.runCOLT(settings)
+
+        def runRPC(self, port, methodName, params):                  
+                jsonRequest = None
+                if (params is None) :
+                        jsonRequest = { "jsonrpc" : "2.0", "method" : methodName, "id": 1 }
+                else :
+                        jsonRequest = { "jsonrpc" : "2.0", "method" : methodName, "params": params, "id": 1 }                        
+
+                jsonRequestStr = json.dumps(jsonRequest)
+
+                req = urllib2.Request("http://localhost:" + str(port) + "/rpc/coltService")
+                response = urllib2.urlopen(req, jsonRequestStr)
+                return json.loads(response.read())
 
         def getProjectWorkingDir(self, projectPath): 
                 storageFilePath = os.path.expanduser("~") + os.sep + ".colt" + os.sep + "storage.xml"
