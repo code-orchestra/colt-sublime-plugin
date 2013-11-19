@@ -37,9 +37,45 @@ class RunWithColtCommand(sublime_plugin.WindowCommand):
                 self.addToWorkingSet(coltProjectFilePath)
 
                 # Run COLT
-                self.runCOLT(settings)
+                self.initAndConnect(settings, coltProjectFilePath)
 
-        # def locateCOLTService(self, projectPath): 
+        def establishConnection(self, port):
+                ColtConnection.port = port
+                sublime.status_message("Established connection with COLT on port " + port)
+
+        def initAndConnect(self, settings, projectPath): 
+                sublime.status_message("Trying to establish connection with COLT...")
+
+                port = self.locateCOLTServicePort(projectPath)
+                if not port is None :
+                        self.establishConnection(port)
+                        return port
+
+                self.runCOLT(settings)
+                
+                timeout = 20
+                while timeout > 0 :
+                        time.sleep(0.3)
+                        timeout -= 0.3
+
+                        port = self.locateCOLTServicePort(projectPath)
+                        if not port is None :
+                                self.establishConnection(port)
+                                return port
+
+                return None
+
+        def locateCOLTServicePort(self, projectPath): 
+                port = self.getRPCPortForProject(projectPath)
+                if port is None :
+                        return None
+
+                try :
+                        self.runRPC(port, "ping", None)                        
+                except Exception:
+                        return None
+
+                return port                
 
         def runRPC(self, port, methodName, params):                  
                 jsonRequest = None
@@ -88,9 +124,9 @@ class RunWithColtCommand(sublime_plugin.WindowCommand):
                 if not os.path.exists(rpcInfoFilePath) :
                         return None
 
-                timePassedSinceModification = int(calendar.timegm(time.gmtime())) - int(os.path.getmtime(rpcInfoFilePath))
-                if (timePassedSinceModification > 2) :
-                        return None
+                #timePassedSinceModification = int(calendar.timegm(time.gmtime())) - int(os.path.getmtime(rpcInfoFilePath))
+                #if (timePassedSinceModification > 2) :
+                #        return None
 
                 with open(rpcInfoFilePath, "r") as rpcInfoFile :
                         return rpcInfoFile.read().split(":")[1]
