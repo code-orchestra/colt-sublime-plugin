@@ -3,8 +3,12 @@ import os.path
 import subprocess
 import urllib2
 import json
+import calendar, time
 
 from xml.etree.ElementTree import Element, SubElement, tostring, parse
+
+class ColtConnection(object):
+        port = -1
 
 class RunWithColtCommand(sublime_plugin.WindowCommand):
         
@@ -34,6 +38,8 @@ class RunWithColtCommand(sublime_plugin.WindowCommand):
 
                 # Run COLT
                 self.runCOLT(settings)
+
+        # def locateCOLTService(self, projectPath): 
 
         def runRPC(self, port, methodName, params):                  
                 jsonRequest = None
@@ -66,6 +72,13 @@ class RunWithColtCommand(sublime_plugin.WindowCommand):
 
                 return os.path.expanduser("~") + os.sep + ".colt" + os.sep + "storage" + os.sep + projectSubDir
 
+        def getSecurityToken(self): 
+                settings = sublime.load_settings("Preferences.sublime-settings")
+                if not settings.has("securityToken") :
+                        return None
+
+                return settings.get("securityToken")
+
         def getRPCPortForProject(self, projectPath):
                 storageDir = self.getProjectWorkingDir(projectPath)
                 if storageDir is None :
@@ -73,6 +86,10 @@ class RunWithColtCommand(sublime_plugin.WindowCommand):
 
                 rpcInfoFilePath = storageDir + os.sep + "rpc.info"
                 if not os.path.exists(rpcInfoFilePath) :
+                        return None
+
+                timePassedSinceModification = int(calendar.timegm(time.gmtime())) - int(os.path.getmtime(rpcInfoFilePath))
+                if (timePassedSinceModification > 2) :
                         return None
 
                 with open(rpcInfoFilePath, "r") as rpcInfoFile :
