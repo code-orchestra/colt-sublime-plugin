@@ -41,14 +41,12 @@ class RunWithColtCommand(sublime_plugin.WindowCommand):
                 # Run COLT
                 self.initAndConnect(settings, coltProjectFilePath)
 
-                # TODO: delete
+                # Authorize
                 self.authorize()
 
         def authorize(self):
                 if self.getSecurityToken() is None :
-                        return self.makeNewSecurityToken(True)
-
-                return true
+                        self.makeNewSecurityToken(True)
 
         def makeNewSecurityToken(self, newRequest):
                 if newRequest :
@@ -56,21 +54,44 @@ class RunWithColtCommand(sublime_plugin.WindowCommand):
                                 self.requestShortCode()
                         except Exception:
                                 sublime.error_message("Can't request an authorization key from COLT. Make sure COLT is active and running")
-                                return False
+                                return
 
-                
+                self.window.show_input_panel("Enter the short key displayed in COLT:", "", self.onShortKeyInput, None, None)
 
-                # TODO: implement
-                return False
+        def onShortKeyInput(self, shortCode):
+                if shortCode :
+                        try:
+                                token = self.obtainAuthToken(shortCode)
+                                if token is None :
+                                        sublime.error_message("Invalid short code entered")        
+                                        self.authorize()
+
+                                settings = sublime.load_settings(RunWithColtCommand.PREFERENCES_NAME)
+                                settings.set("securityToken", token)
+                                sublime.save_settings(RunWithColtCommand.PREFERENCES_NAME)
+                                sublime.status_message("Successfully authorized with COLT")
+                        except Exception:
+                                sublime.error_message("Can't authorize with COLT. Make sure COLT is active and running")
+                                #raise
+                                return
+                else :
+                        sublime.error_message("Short authorization key can't be empty")  
+                        self.authorize()
+
+        def obtainAuthToken(self, shortCode):
+                response = self.runRPC(ColtConnection.port, "obtainAuthToken", [ shortCode ])
+                if response.has_key("error") :
+                        return None
+
+                return response["result"]
 
         def requestShortCode(self):
-                # TODO: delete 'print'
-                print self.runRPC(ColtConnection.port, "requestShortCode", [ "Sublime Plugin" ])
+                self.runRPC(ColtConnection.port, "requestShortCode", [ "Sublime Plugin" ])
 
         def establishConnection(self, port):
                 ColtConnection.port = port
                 sublime.status_message("Established connection with COLT on port " + port)
-                time.sleep(1.5)
+                time.sleep(2)
 
         def initAndConnect(self, settings, projectPath): 
                 sublime.status_message("Trying to establish connection with COLT...")
@@ -153,18 +174,18 @@ class RunWithColtCommand(sublime_plugin.WindowCommand):
                 if not os.path.exists(rpcInfoFilePath) :
                         return None
 
-                #timePassedSinceModification = int(calendar.timegm(time.gmtime())) - int(os.path.getmtime(rpcInfoFilePath))
-                #if (timePassedSinceModification > 2) :
-                #        return None
+                timePassedSinceModification = int(calendar.timegm(time.gmtime())) - int(os.path.getmtime(rpcInfoFilePath))
+                if (timePassedSinceModification > 2) :
+                        return None
 
                 with open(rpcInfoFilePath, "r") as rpcInfoFile :
                         return rpcInfoFile.read().split(":")[1]
 
         def onCOLTPathInput(self, inputPath):
                 if inputPath and os.path.exists(inputPath) :
-                        settings = sublime.load_settings("Preferences.sublime-settings")
+                        settings = sublime.load_settings(RunWithColtCommand.PREFERENCES_NAME)
                         settings.set("coltPath", inputPath)
-                        sublime.save_settings("Preferences.sublime-settings")
+                        sublime.save_settings(RunWithColtCommand.PREFERENCES_NAME)
                         self.run()
                 else :
                         sublime.error_message("COLT path specified is invalid")
@@ -203,6 +224,7 @@ class RunWithColtCommand(sublime_plugin.WindowCommand):
         def runCOLT(self, settings):
                 coltPath = settings.get("coltPath")
 
+                # TODO: change to sublime.platform()
                 if (os.name == "posix") :
                         # Mac, I hope
                         subprocess.Popen(["open", "-n", "-a", coltPath])
