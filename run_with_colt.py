@@ -9,7 +9,8 @@ from xml.etree.ElementTree import Element, SubElement, tostring, parse
 
 class ColtConnection(object):
         port = -1
-        messageId = 1;
+        messageId = 1
+        runAfterAuthorization = None
 
 class RunWithColtCommand(sublime_plugin.WindowCommand):
         
@@ -42,11 +43,9 @@ class RunWithColtCommand(sublime_plugin.WindowCommand):
                 # Run COLT
                 self.initAndConnect(settings, coltProjectFilePath)
 
-                # Authorize
+                # Authorize and start live
+                ColtConnection.runAfterAuthorization = self.startLive
                 self.authorize()
-
-                # Start live
-                self.startLive()
 
         def startLive(self):
                 securityToken = self.getSecurityToken()
@@ -56,6 +55,13 @@ class RunWithColtCommand(sublime_plugin.WindowCommand):
         def authorize(self):
                 if self.getSecurityToken() is None :
                         self.makeNewSecurityToken(True)
+                else :
+                        self.runAfterAuthorization()
+
+        def runAfterAuthorization():
+                if not ColtConnection.runAfterAuthorization is None :
+                        ColtConnection.runAfterAuthorization()
+                        ColtConnection.runAfterAuthorization = None
 
         def makeNewSecurityToken(self, newRequest):
                 if newRequest :
@@ -79,6 +85,8 @@ class RunWithColtCommand(sublime_plugin.WindowCommand):
                                 settings.set("securityToken", token)
                                 sublime.save_settings(RunWithColtCommand.PREFERENCES_NAME)
                                 sublime.status_message("Successfully authorized with COLT")
+
+                                self.runAfterAuthorization()
                         except Exception:
                                 sublime.error_message("Can't authorize with COLT. Make sure COLT is active and running")
                                 #raise
