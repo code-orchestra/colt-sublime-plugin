@@ -12,14 +12,16 @@ class ColtConnection(object):
 
 class RunWithColtCommand(sublime_plugin.WindowCommand):
         
+        PREFERENCES_NAME = "Preferences.sublime-settings"
+
         def run(self):
-                settings = sublime.load_settings("Preferences.sublime-settings")
+                settings = sublime.load_settings(RunWithColtCommand.PREFERENCES_NAME)
                 if not settings.has("coltPath") :                        
                         sublime.error_message("COLT path is not specified, please enter the path")
                         self.window.show_input_panel("COLT Path:", "", self.onCOLTPathInput, None, None)
                         return
                 
-                settings = sublime.load_settings("Preferences.sublime-settings")
+                settings = sublime.load_settings(RunWithColtCommand.PREFERENCES_NAME)
                 coltPath = settings.get("coltPath")
                 
                 if not os.path.exists(coltPath) :
@@ -27,7 +29,7 @@ class RunWithColtCommand(sublime_plugin.WindowCommand):
                         self.window.show_input_panel("COLT Path:", "", self.onCOLTPathInput, None, None)
                         return
 
-                settings = sublime.load_settings("Preferences.sublime-settings")
+                settings = sublime.load_settings(RunWithColtCommand.PREFERENCES_NAME)
                 coltPath = settings.get("coltPath")
 
                 # Export COLT project
@@ -39,9 +41,36 @@ class RunWithColtCommand(sublime_plugin.WindowCommand):
                 # Run COLT
                 self.initAndConnect(settings, coltProjectFilePath)
 
+                # TODO: delete
+                self.authorize()
+
+        def authorize(self):
+                if self.getSecurityToken() is None :
+                        return self.makeNewSecurityToken(True)
+
+                return true
+
+        def makeNewSecurityToken(self, newRequest):
+                if newRequest :
+                        try:
+                                self.requestShortCode()
+                        except Exception:
+                                sublime.error_message("Can't request an authorization key from COLT. Make sure COLT is active and running")
+                                return False
+
+                
+
+                # TODO: implement
+                return False
+
+        def requestShortCode(self):
+                # TODO: delete 'print'
+                print self.runRPC(ColtConnection.port, "requestShortCode", [ "Sublime Plugin" ])
+
         def establishConnection(self, port):
                 ColtConnection.port = port
                 sublime.status_message("Established connection with COLT on port " + port)
+                time.sleep(1.5)
 
         def initAndConnect(self, settings, projectPath): 
                 sublime.status_message("Trying to establish connection with COLT...")
@@ -109,7 +138,7 @@ class RunWithColtCommand(sublime_plugin.WindowCommand):
                 return os.path.expanduser("~") + os.sep + ".colt" + os.sep + "storage" + os.sep + projectSubDir
 
         def getSecurityToken(self): 
-                settings = sublime.load_settings("Preferences.sublime-settings")
+                settings = sublime.load_settings(RunWithColtCommand.PREFERENCES_NAME)
                 if not settings.has("securityToken") :
                         return None
 
