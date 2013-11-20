@@ -9,6 +9,7 @@ from xml.etree.ElementTree import Element, SubElement, tostring, parse
 
 class ColtConnection(object):
         port = -1
+        messageId = 1;
 
 class RunWithColtCommand(sublime_plugin.WindowCommand):
         
@@ -43,6 +44,14 @@ class RunWithColtCommand(sublime_plugin.WindowCommand):
 
                 # Authorize
                 self.authorize()
+
+                # Start live
+                self.startLive()
+
+        def startLive(self):
+                securityToken = self.getSecurityToken()
+                if not self.getSecurityToken() is None :                        
+                        self.runRPC(ColtConnection.port, "startLive", [ securityToken ])
 
         def authorize(self):
                 if self.getSecurityToken() is None :
@@ -129,10 +138,14 @@ class RunWithColtCommand(sublime_plugin.WindowCommand):
 
         def runRPC(self, port, methodName, params):                  
                 jsonRequest = None
+                
+                messageId = ColtConnection.messageId
+                ColtConnection.messageId += 1
+
                 if (params is None) :
-                        jsonRequest = { "jsonrpc" : "2.0", "method" : methodName, "id": 1 }
+                        jsonRequest = { "jsonrpc" : "2.0", "method" : methodName, "id": messageId }
                 else :
-                        jsonRequest = { "jsonrpc" : "2.0", "method" : methodName, "params": params, "id": 1 }                        
+                        jsonRequest = { "jsonrpc" : "2.0", "method" : methodName, "params": params, "id": messageId }                        
 
                 jsonRequestStr = json.dumps(jsonRequest)
 
