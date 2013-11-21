@@ -47,11 +47,22 @@ class RunWithColtCommand(sublime_plugin.WindowCommand):
                 ColtConnection.runAfterAuthorization = self.startLive
                 self.authorize()
 
+        def getWordPosition(self, view):
+                position = self.getPosition(view)
+                return view.word(position).end()
+
         def getPosition(self, view):
-                position = -1
                 for sel in view.sel() :
-                        position = sel.end()
-                return position
+                        return sel
+
+                return None
+
+        def getPositionEnd(self, view):
+                position = self.getPosition(view)
+                if position is None :
+                        return - 1
+
+                return position.end()
 
         def getContent(self, view):
                 return view.substr(sublime.Region(0, view.size()))
