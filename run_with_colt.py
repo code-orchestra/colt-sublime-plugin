@@ -1,16 +1,11 @@
 import sublime, sublime_plugin
 import os.path
 import subprocess
-import urllib2
-import json
 import calendar, time
+import colt_rpc
 
 from xml.etree.ElementTree import Element, SubElement, tostring, parse
-
-class ColtConnection(object):
-        port = -1
-        messageId = 1
-        runAfterAuthorization = None
+from colt_rpc import ColtConnection
 
 class ColtCompletitions(sublime_plugin.EventListener):
         
@@ -64,78 +59,18 @@ class RunWithColtCommand(sublime_plugin.WindowCommand):
                 settings = sublime.load_settings(RunWithColtCommand.PREFERENCES_NAME)
                 coltPath = settings.get("coltPath")
 
-                self.window.active_view().showCompletions()
-
                 # Export COLT project
-                # coltProjectFilePath = self.exportProject()
+                coltProjectFilePath = self.exportProject()
 
                 # Add project to workset file
-                # self.addToWorkingSet(coltProjectFilePath)
+                self.addToWorkingSet(coltProjectFilePath)
 
                 # Run COLT
-                # self.initAndConnect(settings, coltProjectFilePath)
+                self.initAndConnect(settings, coltProjectFilePath)
 
                 # Authorize and start live
-                # ColtConnection.runAfterAuthorization = self.startLive
-                # self.authorize()
-
-        def startLive(self):
-                securityToken = self.getSecurityToken()
-                if not self.getSecurityToken() is None :                        
-                        self.runRPC(ColtConnection.port, "startLive", [ securityToken ])
-
-        def authorize(self):
-                if self.getSecurityToken() is None :
-                        self.makeNewSecurityToken(True)
-                else :
-                        self.runAfterAuthorization()
-
-        def runAfterAuthorization():
-                if not ColtConnection.runAfterAuthorization is None :
-                        ColtConnection.runAfterAuthorization()
-                        ColtConnection.runAfterAuthorization = None
-
-        def makeNewSecurityToken(self, newRequest):
-                if newRequest :
-                        try:
-                                self.requestShortCode()
-                        except Exception:
-                                sublime.error_message("Can't request an authorization key from COLT. Make sure COLT is active and running")
-                                return
-
-                self.window.show_input_panel("Enter the short key displayed in COLT:", "", self.onShortKeyInput, None, None)
-
-        def onShortKeyInput(self, shortCode):
-                if shortCode :
-                        try:
-                                token = self.obtainAuthToken(shortCode)
-                                if token is None :
-                                        sublime.error_message("Invalid short code entered")        
-                                        self.authorize()
-
-                                settings = sublime.load_settings(RunWithColtCommand.PREFERENCES_NAME)
-                                settings.set("securityToken", token)
-                                sublime.save_settings(RunWithColtCommand.PREFERENCES_NAME)
-                                sublime.status_message("Successfully authorized with COLT")
-
-                                self.runAfterAuthorization()
-                        except Exception:
-                                sublime.error_message("Can't authorize with COLT. Make sure COLT is active and running")
-                                #raise
-                                return
-                else :
-                        sublime.error_message("Short authorization key can't be empty")  
-                        self.authorize()
-
-        def obtainAuthToken(self, shortCode):
-                response = self.runRPC(ColtConnection.port, "obtainAuthToken", [ shortCode ])
-                if response.has_key("error") :
-                        return None
-
-                return response["result"]
-
-        def requestShortCode(self):
-                self.runRPC(ColtConnection.port, "requestShortCode", [ "Sublime Plugin" ])
+                colt_rpc.runAfterAuthorization = colt_rpc.startLive
+                colt_rpc.authorize(self.window)
 
         def establishConnection(self, port):
                 ColtConnection.port = port
@@ -162,6 +97,7 @@ class RunWithColtCommand(sublime_plugin.WindowCommand):
                                 self.establishConnection(port)
                                 return port
 
+                sublime.error_message("Can't establish connection with COLT")
                 return None
 
         def locateCOLTServicePort(self, projectPath): 
@@ -170,28 +106,11 @@ class RunWithColtCommand(sublime_plugin.WindowCommand):
                         return None
 
                 try :
-                        self.runRPC(port, "ping", None)                        
+                        colt_rpc.runRPC(port, "ping", None)                        
                 except Exception:
                         return None
 
                 return port                
-
-        def runRPC(self, port, methodName, params):                  
-                jsonRequest = None
-                
-                messageId = ColtConnection.messageId
-                ColtConnection.messageId += 1
-
-                if (params is None) :
-                        jsonRequest = { "jsonrpc" : "2.0", "method" : methodName, "id": messageId }
-                else :
-                        jsonRequest = { "jsonrpc" : "2.0", "method" : methodName, "params": params, "id": messageId }                        
-
-                jsonRequestStr = json.dumps(jsonRequest)
-
-                req = urllib2.Request("http://localhost:" + str(port) + "/rpc/coltService")
-                response = urllib2.urlopen(req, jsonRequestStr)
-                return json.loads(response.read())
 
         def getProjectWorkingDir(self, projectPath): 
                 storageFilePath = os.path.expanduser("~") + os.sep + ".colt" + os.sep + "storage.xml"
@@ -210,13 +129,6 @@ class RunWithColtCommand(sublime_plugin.WindowCommand):
                         return None
 
                 return os.path.expanduser("~") + os.sep + ".colt" + os.sep + "storage" + os.sep + projectSubDir
-
-        def getSecurityToken(self): 
-                settings = sublime.load_settings(RunWithColtCommand.PREFERENCES_NAME)
-                if not settings.has("securityToken") :
-                        return None
-
-                return settings.get("securityToken")
 
         def getRPCPortForProject(self, projectPath):
                 storageDir = self.getProjectWorkingDir(projectPath)
