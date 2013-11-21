@@ -47,6 +47,15 @@ class RunWithColtCommand(sublime_plugin.WindowCommand):
                 ColtConnection.runAfterAuthorization = self.startLive
                 self.authorize()
 
+        def getPosition(self, view):
+                position = -1
+                for sel in view.sel() :
+                        position = sel.end()
+                return position
+
+        def getContent(self, view):
+                return view.substr(sublime.Region(0, view.size()))
+
         def startLive(self):
                 securityToken = self.getSecurityToken()
                 if not self.getSecurityToken() is None :                        
