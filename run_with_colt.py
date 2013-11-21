@@ -12,40 +12,14 @@ class ColtConnection(object):
         messageId = 1
         runAfterAuthorization = None
 
-class RunWithColtCommand(sublime_plugin.WindowCommand):
+class ColtCompletitions(sublime_plugin.EventListener):
         
-        PREFERENCES_NAME = "Preferences.sublime-settings"
+        def on_query_completions(self, view, prefix, locations):                
+                if (ColtConnection.port == -1) :
+                        return []
 
-        def run(self):
-                settings = sublime.load_settings(RunWithColtCommand.PREFERENCES_NAME)
-                if not settings.has("coltPath") :                        
-                        sublime.error_message("COLT path is not specified, please enter the path")
-                        self.window.show_input_panel("COLT Path:", "", self.onCOLTPathInput, None, None)
-                        return
-                
-                settings = sublime.load_settings(RunWithColtCommand.PREFERENCES_NAME)
-                coltPath = settings.get("coltPath")
-                
-                if not os.path.exists(coltPath) :
-                        sublime.error_message("COLT path specified is invalid, please enter the correct path")
-                        self.window.show_input_panel("COLT Path:", "", self.onCOLTPathInput, None, None)
-                        return
-
-                settings = sublime.load_settings(RunWithColtCommand.PREFERENCES_NAME)
-                coltPath = settings.get("coltPath")
-
-                # Export COLT project
-                coltProjectFilePath = self.exportProject()
-
-                # Add project to workset file
-                self.addToWorkingSet(coltProjectFilePath)
-
-                # Run COLT
-                self.initAndConnect(settings, coltProjectFilePath)
-
-                # Authorize and start live
-                ColtConnection.runAfterAuthorization = self.startLive
-                self.authorize()
+                # TODO: implement
+                return [ ("var1\t(COLT suggested)", "var1"), ("var2\t(COLT suggested)", "var2") ]
 
         def getWordPosition(self, view):
                 position = self.getPosition(view)
@@ -66,6 +40,44 @@ class RunWithColtCommand(sublime_plugin.WindowCommand):
 
         def getContent(self, view):
                 return view.substr(sublime.Region(0, view.size()))
+
+
+class RunWithColtCommand(sublime_plugin.WindowCommand):
+        
+        PREFERENCES_NAME = "Preferences.sublime-settings"
+
+        def run(self):
+                settings = sublime.load_settings(RunWithColtCommand.PREFERENCES_NAME)
+                if not settings.has("coltPath") :                        
+                        sublime.error_message("COLT path is not specified, please enter the path")
+                        self.window.show_input_panel("COLT Path:", "", self.onCOLTPathInput, None, None)
+                        return
+
+                settings = sublime.load_settings(RunWithColtCommand.PREFERENCES_NAME)
+                coltPath = settings.get("coltPath")
+                
+                if not os.path.exists(coltPath) :
+                        sublime.error_message("COLT path specified is invalid, please enter the correct path")
+                        self.window.show_input_panel("COLT Path:", "", self.onCOLTPathInput, None, None)
+                        return
+
+                settings = sublime.load_settings(RunWithColtCommand.PREFERENCES_NAME)
+                coltPath = settings.get("coltPath")
+
+                self.window.active_view().showCompletions()
+
+                # Export COLT project
+                # coltProjectFilePath = self.exportProject()
+
+                # Add project to workset file
+                # self.addToWorkingSet(coltProjectFilePath)
+
+                # Run COLT
+                # self.initAndConnect(settings, coltProjectFilePath)
+
+                # Authorize and start live
+                # ColtConnection.runAfterAuthorization = self.startLive
+                # self.authorize()
 
         def startLive(self):
                 securityToken = self.getSecurityToken()
