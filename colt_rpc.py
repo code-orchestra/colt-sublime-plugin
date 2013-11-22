@@ -97,7 +97,7 @@ def startLive():
         runRPC(ColtConnection.port, "startLive", [ securityToken ])
 
 def getContextForPosition(filePath, position, currentContent, contextType):
-    return runRPC(ColtConnection.port, "getContextForPosition", [ securityToken, filePath, position, currentContent, contextType ])
+    return runRPC(ColtConnection.port, "getContextForPosition", [ getSecurityToken(), filePath, position, currentContent, contextType ])
 
 def establishConnection(port):
     ColtConnection.port = port

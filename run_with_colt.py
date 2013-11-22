@@ -1,5 +1,6 @@
 import sublime, sublime_plugin
 import colt, colt_rpc
+import os.path
 
 from colt import ColtPreferences
 from colt_rpc import ColtConnection
@@ -9,6 +10,8 @@ class ColtCompletitions(sublime_plugin.EventListener):
         def on_query_completions(self, view, prefix, locations):                
                 if (ColtConnection.port == -1) :
                         return []
+                
+                print colt_rpc.getContextForPosition(view.file_name(), self.getPositionEnd(view), self.getContent(view), "PROPERTIES")
 
                 # TODO: implement
                 return [ ("var1\t(COLT suggested)", "var1"), ("var2\t(COLT suggested)", "var2") ]
