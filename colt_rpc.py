@@ -1,11 +1,13 @@
 import sublime
 import urllib2
 import json
+import colt
+import calendar, time
+import os
+
+from colt import ColtPreferences
 
 runAfterAuthorization = None
-
-class ColtPreferences(object):
-    NAME = "Preferences.sublime-settings"
 
 class ColtConnection(object):
     port = -1
@@ -69,7 +71,7 @@ def obtainAuthToken(shortCode):
     return response["result"]
 
 def requestShortCode():
-    runRPC(ColtConnection.port, "requestShortCode", [ "Sublime Plugin" ])	
+    runRPC(ColtConnection.port, "requestShortCode", [ "Sublime Plugin" ])	    
 
 def runRPC(port, methodName, params):                  
     jsonRequest = None
@@ -93,4 +95,64 @@ def startLive():
     securityToken = getSecurityToken()
     if not getSecurityToken() is None :                        
         runRPC(ColtConnection.port, "startLive", [ securityToken ])
+
+def getContextForPosition(filePath, position, currentContent, contextType):
+    return runRPC(ColtConnection.port, "getContextForPosition", [ securityToken, filePath, position, currentContent, contextType ])
+
+def establishConnection(port):
+    ColtConnection.port = port
+    sublime.status_message("Established connection with COLT on port " + port)
+    time.sleep(2)
+
+def initAndConnect(settings, projectPath): 
+    sublime.status_message("Trying to establish connection with COLT...")
+
+    port = locateCOLTServicePort(projectPath)
+    if not port is None :
+        establishConnection(port)
+        return port
+
+    colt.runCOLT(settings)
+    
+    timeout = 20
+    while timeout > 0 :
+        time.sleep(0.3)
+        timeout -= 0.3
+
+        port = locateCOLTServicePort(projectPath)
+        if not port is None :
+            establishConnection(port)
+            return port
+
+    sublime.error_message("Can't establish connection with COLT")
+    return None
+
+def locateCOLTServicePort(projectPath): 
+    port = getRPCPortForProject(projectPath)
+    if port is None :
+        return None
+
+    try :
+        runRPC(port, "ping", None)                        
+    except Exception:
+        return None
+
+    return port   
+
+def getRPCPortForProject(projectPath):
+    storageDir = colt.getProjectWorkingDir(projectPath)
+    if storageDir is None :
+        return None
+
+    rpcInfoFilePath = storageDir + os.sep + "rpc.info"
+    if not os.path.exists(rpcInfoFilePath) :
+        return None
+
+    timePassedSinceModification = int(calendar.timegm(time.gmtime())) - int(os.path.getmtime(rpcInfoFilePath))
+    if (timePassedSinceModification > 2) :
+        return None
+
+    with open(rpcInfoFilePath, "r") as rpcInfoFile :
+        return rpcInfoFile.read().split(":")[1]
+
 
