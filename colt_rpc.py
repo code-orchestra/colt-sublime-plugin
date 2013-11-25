@@ -13,6 +13,13 @@ class ColtConnection(object):
     port = -1
     messageId = 1
 
+def isConnected():
+    return ColtConnection.port != -1
+
+def disconnect():
+    ColtConnection.port = -1    
+    sublime.status_message("Disconnected from COLT")
+
 def runAfterAuthorization():
     if not runAfterAuthorization is None :
         runAfterAuthorization()
@@ -88,7 +95,14 @@ def runRPC(port, methodName, params):
 
     url = "http://localhost:" + str(port) + "/rpc/coltService"
     req = urllib2.Request(url)
-    response = urllib2.urlopen(req, jsonRequestStr)
+    response = None
+
+    try :
+        response = urllib2.urlopen(req, jsonRequestStr)
+    except Exception :
+        disconnect()
+        raise
+    
     return json.loads(response.read())
 
 def startLive():
