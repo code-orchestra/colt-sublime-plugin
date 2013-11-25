@@ -36,10 +36,11 @@ class ColtCompletitions(sublime_plugin.EventListener):
         def getContent(self, view):
                 return view.substr(sublime.Region(0, view.size()))
 
-
-class RunWithColtCommand(sublime_plugin.WindowCommand):
-
+class AbstractColtRunCommand(sublime_plugin.WindowCommand):
         def run(self):
+                return
+
+        def getSettings(self):
                 settings = sublime.load_settings(ColtPreferences.NAME)
                 if not settings.has("coltPath") :                        
                         sublime.error_message("COLT path is not specified, please enter the path")
@@ -54,8 +55,21 @@ class RunWithColtCommand(sublime_plugin.WindowCommand):
                         self.window.show_input_panel("COLT Path:", "", self.onCOLTPathInput, None, None)
                         return
 
-                settings = sublime.load_settings(ColtPreferences.NAME)
-                coltPath = settings.get("coltPath")
+                return sublime.load_settings(ColtPreferences.NAME)    
+
+        def onCOLTPathInput(self, inputPath):
+                if inputPath and os.path.exists(inputPath) :
+                        settings = sublime.load_settings(ColtPreferences.NAME)
+                        settings.set("coltPath", inputPath)
+                        sublime.save_settings(ColtPreferences.NAME)
+                        self.run()
+                else :
+                        sublime.error_message("COLT path specified is invalid")   
+
+class RunWithColtCommand(AbstractColtRunCommand):
+
+        def run(self):
+                settings = self.getSettings()
 
                 # Export COLT project
                 coltProjectFilePath = colt.exportProject(self.window)
@@ -68,13 +82,4 @@ class RunWithColtCommand(sublime_plugin.WindowCommand):
 
                 # Authorize and start live
                 colt_rpc.runAfterAuthorization = colt_rpc.startLive
-                colt_rpc.authorize(self.window)                        
-
-        def onCOLTPathInput(self, inputPath):
-                if inputPath and os.path.exists(inputPath) :
-                        settings = sublime.load_settings(ColtPreferences.NAME)
-                        settings.set("coltPath", inputPath)
-                        sublime.save_settings(ColtPreferences.NAME)
-                        self.run()
-                else :
-                        sublime.error_message("COLT path specified is invalid")                             
+                colt_rpc.authorize(self.window)                                                          
