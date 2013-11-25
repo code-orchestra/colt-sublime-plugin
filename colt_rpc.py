@@ -4,6 +4,7 @@ import json
 import colt
 import calendar, time
 import os
+import threading
 
 from colt import ColtPreferences
 
@@ -13,6 +14,10 @@ class ColtConnection(object):
     port = -1
     messageId = 1
     activeSessions = 0
+
+def coltStateUpdate():
+    if isConnected() :
+        ColtConnection.activeSessions = getActiveSessionsCount()
 
 def isConnected():
     return ColtConnection.port != -1
@@ -28,10 +33,6 @@ def disconnect():
     sublime.status_message("Disconnected from COLT")
 
 def runAfterAuthorization():
-    # Start polling for session state
-    # TODO: implement
-
-    # Start requested function
     if not runAfterAuthorization is None :
         runAfterAuthorization()
         runAfterAuthorization = None
@@ -124,6 +125,16 @@ def startLive():
     if not getSecurityToken() is None :                        
         runRPC(ColtConnection.port, "startLive", [ securityToken ])
 
+def getState():
+    return runRPC(ColtConnection.port, "getState", None)
+
+def getActiveSessionsCount():
+    try :
+        jsonState = getState()
+        return len(jsonState["result"]["activeConnections"])
+    except Exception :
+        return 0
+
 def getContextForPosition(filePath, position, currentContent, contextType):
     return runRPC(ColtConnection.port, "getContextForPosition", [ getSecurityToken(), filePath, position, currentContent, contextType ])
 
@@ -183,4 +194,12 @@ def getRPCPortForProject(projectPath):
     with open(rpcInfoFilePath, "r") as rpcInfoFile :
         return rpcInfoFile.read().split(":")[1]
 
+def set_interval(func, sec):
+    def func_wrapper():
+        set_interval(func, sec)
+        func()
+    t = threading.Timer(sec, func_wrapper)
+    t.start()
+    return t
 
+set_interval(coltStateUpdate, 0.8)    

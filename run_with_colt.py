@@ -96,6 +96,7 @@ class OpenInColtCommand(AbstractColtRunCommand):
                 colt_rpc.initAndConnect(settings, coltProjectFilePath)
 
                 # Authorize
+                colt_rpc.runAfterAuthorization = None
                 colt_rpc.authorize(self.window)                                                          
 
 class RunWithColtCommand(AbstractColtRunCommand):
