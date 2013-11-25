@@ -116,6 +116,9 @@ def runRPC(port, methodName, params):
     
     return json.loads(response.read())
 
+def reload():
+    return runRPC(ColtConnection.port, "reload", [ getSecurityToken() ])
+
 def startLive():
     securityToken = getSecurityToken()
     if not getSecurityToken() is None :                        

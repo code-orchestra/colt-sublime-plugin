@@ -1,5 +1,6 @@
 [
 { "keys": ["f10"], "command": "start_colt" },
 { "keys": ["ctrl+shift+f10"], "command": "run_with_colt" },
-{ "keys": ["ctrl+f10"], "command": "open_in_colt" }
+{ "keys": ["ctrl+f10"], "command": "open_in_colt" },
+{ "keys": ["ctrl+shift+r"], "command": "colt_reload" }
 ]

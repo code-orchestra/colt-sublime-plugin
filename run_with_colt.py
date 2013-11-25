@@ -66,6 +66,13 @@ class AbstractColtRunCommand(sublime_plugin.WindowCommand):
                 else :
                         sublime.error_message("COLT path specified is invalid")   
 
+class ColtReloadCommand(sublime_plugin.WindowCommand):
+        def run(self):
+                colt_rpc.reload()
+
+        def is_enabled(self):
+                return colt_rpc.isConnected() and colt_rpc.hasActiveSessions()
+
 class StartColtCommand(AbstractColtRunCommand):
 
         def run(self):
