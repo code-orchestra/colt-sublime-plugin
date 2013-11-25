@@ -1,5 +1,11 @@
 [  
+    {
+        "command": "start_colt", "caption": "Start COLT"
+    },
     {  
-        "command": "run_with_colt", "caption": "Run With COLT"
-    }  
+        "command": "run_with_colt", "caption": "Run with COLT"
+    },
+    {  
+        "command": "open_in_colt", "caption": "Open in COLT"
+    }    
 ]  

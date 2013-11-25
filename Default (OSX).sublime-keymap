@@ -1,3 +1,5 @@
 [
-{ "keys": ["ctrl+shift+C"], "command": "run_with_colt" }
+{ "keys": ["f10"], "command": "start_colt" },
+{ "keys": ["super+shift+f10"], "command": "run_with_colt" },
+{ "keys": ["super+f10"], "command": "open_in_colt" }
 ]

@@ -66,6 +66,31 @@ class AbstractColtRunCommand(sublime_plugin.WindowCommand):
                 else :
                         sublime.error_message("COLT path specified is invalid")   
 
+class StartColtCommand(AbstractColtRunCommand):
+
+        def run(self):
+                settings = self.getSettings()                
+                
+                # TODO: detect if colt is running and skip running it if it is
+                colt.runCOLT(settings)
+
+class OpenInColtCommand(AbstractColtRunCommand):
+
+        def run(self):
+                settings = self.getSettings()
+
+                # Export COLT project
+                coltProjectFilePath = colt.exportProject(self.window)
+
+                # Add project to workset file
+                colt.addToWorkingSet(coltProjectFilePath)
+
+                # Run COLT
+                colt_rpc.initAndConnect(settings, coltProjectFilePath)
+
+                # Authorize
+                colt_rpc.authorize(self.window)                                                          
+
 class RunWithColtCommand(AbstractColtRunCommand):
 
         def run(self):
