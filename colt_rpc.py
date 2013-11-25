@@ -18,6 +18,7 @@ def isConnected():
 
 def disconnect():
     ColtConnection.port = -1    
+    ColtConnection.messageId = 1
     sublime.status_message("Disconnected from COLT")
 
 def runAfterAuthorization():
