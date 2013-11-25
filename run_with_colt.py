@@ -8,7 +8,7 @@ from colt_rpc import ColtConnection
 class ColtCompletitions(sublime_plugin.EventListener):
         
         def on_query_completions(self, view, prefix, locations):                
-                if (ColtConnection.port == -1) :
+                if not colt_rpc.isConnected() or not colt_rpc.hasActiveSessions() :
                         return []
                 
                 print colt_rpc.getContextForPosition(view.file_name(), self.getPositionEnd(view), self.getContent(view), "PROPERTIES")

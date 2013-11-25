@@ -12,16 +12,26 @@ runAfterAuthorization = None
 class ColtConnection(object):
     port = -1
     messageId = 1
+    activeSessions = 0
 
 def isConnected():
     return ColtConnection.port != -1
 
+def hasActiveSessions():
+    return ColtConnection.activeSessions > 0
+
 def disconnect():
     ColtConnection.port = -1    
     ColtConnection.messageId = 1
+    ColtConnection.activeSessions = 0
+
     sublime.status_message("Disconnected from COLT")
 
 def runAfterAuthorization():
+    # Start polling for session state
+    # TODO: implement
+
+    # Start requested function
     if not runAfterAuthorization is None :
         runAfterAuthorization()
         runAfterAuthorization = None
