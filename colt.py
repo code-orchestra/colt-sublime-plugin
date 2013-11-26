@@ -61,14 +61,16 @@ def addToWorkingSet(newProjectPath):
 def runCOLT(settings):
         coltPath = settings.get("coltPath")
 
-        # TODO: change to sublime.platform()
-        if (os.name == "posix") :
+        platform = sublime.platform()
+        if platform == "osx" :
                 # Mac, I hope
                 subprocess.Popen(["open", "-n", "-a", coltPath])
-        else :
+        elif platform == "windows" :
                 # Windows, I suppose
                 # TODO: implement
                 print "Unimplemented"    
+        else :
+                sublime.error_message("Unsupported platform: " + platform)
 
 def exportProject(window):
         mainDocumentPath = window.active_view().file_name()
