@@ -1,6 +1,7 @@
 import sublime, sublime_plugin
 import colt, colt_rpc
 import os.path
+import json
 
 from colt import ColtPreferences
 from colt_rpc import ColtConnection
@@ -8,13 +9,33 @@ from colt_rpc import ColtConnection
 class ColtCompletitions(sublime_plugin.EventListener):
         
         def on_query_completions(self, view, prefix, locations):                
+                position = self.getPositionEnd(view)
+                
+                if view.substr(position - 1) == "." :
+                        position = position - 1
+                else :
+                        return []
+
                 if not colt_rpc.isConnected() or not colt_rpc.hasActiveSessions() :
                         return []
-                
-                print colt_rpc.getContextForPosition(view.file_name(), self.getPositionEnd(view), self.getContent(view), "PROPERTIES")
+
+                response = colt_rpc.getContextForPosition(view.file_name(), position, self.getContent(view), "PROPERTIES")
+                if response.has_key("error") :
+                        return []
+
+                result = response["result"]
+                if not result is None :
+                        completitions = []
+                        resultJSON = json.loads(result)
+                        for resultStr in resultJSON :
+                                completitions.append((resultStr + "\t(COLT suggested)", resultStr))
+
+                print completitions
+
+                return completitions
 
                 # TODO: implement
-                return [ ("var1\t(COLT suggested)", "var1"), ("var2\t(COLT suggested)", "var2") ]
+                #return [ ("var1\t(COLT suggested)", "var1"), ("var2\t(COLT suggested)", "var2") ]
 
         def getWordPosition(self, view):
                 position = self.getPosition(view)
