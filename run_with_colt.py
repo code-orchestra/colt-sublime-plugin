@@ -9,12 +9,18 @@ from colt_rpc import ColtConnection
 class ColtCompletitions(sublime_plugin.EventListener):
         
         def on_query_completions(self, view, prefix, locations):                
+                # TODO: filter by file type
+
                 position = self.getPositionEnd(view)
                 
                 if view.substr(position - 1) == "." :
                         position = position - 1
                 else :
-                        return []
+                        wordStart = view.word(self.getPosition(view)).begin()
+                        if view.substr(wordStart - 1) == "." :
+                                position = wordStart - 1
+                        else :
+                                return []
 
                 if not colt_rpc.isConnected() or not colt_rpc.hasActiveSessions() :
                         return []
@@ -30,12 +36,7 @@ class ColtCompletitions(sublime_plugin.EventListener):
                         for resultStr in resultJSON :
                                 completitions.append((resultStr + "\t(COLT suggested)", resultStr))
 
-                print completitions
-
                 return completitions
-
-                # TODO: implement
-                #return [ ("var1\t(COLT suggested)", "var1"), ("var2\t(COLT suggested)", "var2") ]
 
         def getWordPosition(self, view):
                 position = self.getPosition(view)
