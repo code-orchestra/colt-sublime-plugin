@@ -6,6 +6,10 @@ from xml.etree.ElementTree import Element, SubElement, tostring, parse
 class ColtPreferences(object):
         NAME = "Preferences.sublime-settings"
 
+def isColtFile(view):
+        filename = view.file_name().lower()
+        return filename.endswith(".js") or filename.endswith(".htm") or filename.endswith(".html")
+
 def getProjectWorkingDir(projectPath): 
         storageFilePath = os.path.expanduser("~") + os.sep + ".colt" + os.sep + "storage.xml"
 

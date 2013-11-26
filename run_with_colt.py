@@ -9,7 +9,8 @@ from colt_rpc import ColtConnection
 class ColtCompletitions(sublime_plugin.EventListener):
         
         def on_query_completions(self, view, prefix, locations):                
-                # TODO: filter by file type
+                if not colt.isColtFile(view) :
+                        return []
 
                 position = self.getPositionEnd(view)
                 
@@ -87,6 +88,11 @@ class AbstractColtRunCommand(sublime_plugin.WindowCommand):
                         self.run()
                 else :
                         sublime.error_message("COLT path specified is invalid")   
+
+        def is_enabled(self):
+                if self.window.active_view() is None :
+                        return False
+                return colt.isColtFile(self.window.active_view())
 
 class ColtReloadCommand(sublime_plugin.WindowCommand):
         def run(self):
