@@ -17,7 +17,7 @@ def getPosition(view):
         return None
 
 def getPositionEnd(view):
-        position = self.getPosition(view)
+        position = getPosition(view)
         if position is None :
                 return - 1
 
@@ -33,7 +33,7 @@ class ColtCompletitions(sublime_plugin.EventListener):
                         return []
 
                 position = getPositionEnd(view)
-                
+
                 if view.substr(position - 1) == "." :
                         position = position - 1
                 else :
