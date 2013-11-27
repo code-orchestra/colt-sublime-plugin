@@ -6,18 +6,38 @@ import json
 from colt import ColtPreferences
 from colt_rpc import ColtConnection
 
+def getWordPosition(view):
+        position = getPosition(view)
+        return view.word(position).end()
+
+def getPosition(view):
+        for sel in view.sel() :
+                return sel
+
+        return None
+
+def getPositionEnd(view):
+        position = self.getPosition(view)
+        if position is None :
+                return - 1
+
+        return position.end()
+
+def getContent(view):
+        return view.substr(sublime.Region(0, view.size()))
+
 class ColtCompletitions(sublime_plugin.EventListener):
         
         def on_query_completions(self, view, prefix, locations):                
                 if not colt.isColtFile(view) :
                         return []
 
-                position = self.getPositionEnd(view)
+                position = getPositionEnd(view)
                 
                 if view.substr(position - 1) == "." :
                         position = position - 1
                 else :
-                        wordStart = view.word(self.getPosition(view)).begin()
+                        wordStart = view.word(getPosition(view)).begin()
                         if view.substr(wordStart - 1) == "." :
                                 position = wordStart - 1
                         else :
@@ -26,7 +46,7 @@ class ColtCompletitions(sublime_plugin.EventListener):
                 if not colt_rpc.isConnected() or not colt_rpc.hasActiveSessions() :
                         return []
 
-                response = colt_rpc.getContextForPosition(view.file_name(), position, self.getContent(view), "PROPERTIES")
+                response = colt_rpc.getContextForPosition(view.file_name(), position, getContent(view), "PROPERTIES")
                 if response.has_key("error") :
                         return []
 
@@ -38,26 +58,6 @@ class ColtCompletitions(sublime_plugin.EventListener):
                                 completitions.append((resultStr + "\t(COLT suggested)", resultStr))
 
                 return completitions
-
-        def getWordPosition(self, view):
-                position = self.getPosition(view)
-                return view.word(position).end()
-
-        def getPosition(self, view):
-                for sel in view.sel() :
-                        return sel
-
-                return None
-
-        def getPositionEnd(self, view):
-                position = self.getPosition(view)
-                if position is None :
-                        return - 1
-
-                return position.end()
-
-        def getContent(self, view):
-                return view.substr(sublime.Region(0, view.size()))
 
 class AbstractColtRunCommand(sublime_plugin.WindowCommand):
         def run(self):
@@ -94,12 +94,27 @@ class AbstractColtRunCommand(sublime_plugin.WindowCommand):
                         return False
                 return colt.isColtFile(self.window.active_view())
 
+class ColtViewValueCommand(sublime_plugin.WindowCommand):
+        def run(self):
+                view = self.window.active_view()
+                position = getWordPosition(view)
+                print colt_rpc.getContextForPosition(view.file_name(), position, getContent(view), "VALUE")
+
+        def is_enabled(self):
+                view = self.window.active_view()
+                if view is None :
+                        return False
+                return colt.isColtFile(view) and colt_rpc.isConnected() and colt_rpc.hasActiveSessions()
+        
 class ColtReloadCommand(sublime_plugin.WindowCommand):
         def run(self):
                 colt_rpc.reload()
 
         def is_enabled(self):
-                return colt_rpc.isConnected() and colt_rpc.hasActiveSessions()
+                view = self.window.active_view()
+                if view is None :
+                        return False
+                return colt.isColtFile(view) and colt_rpc.isConnected() and colt_rpc.hasActiveSessions()
 
 class StartColtCommand(AbstractColtRunCommand):
 
