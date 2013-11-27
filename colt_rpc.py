@@ -77,20 +77,21 @@ def makeNewSecurityToken(newRequest, window):
 
     window.show_input_panel("Enter the short key displayed in COLT:", "", onShortKeyInput, None, None)
 
-def onShortKeyInput(shortCode):
+def onShortKeyInput(shortCode):    
     if shortCode :
         try :
             token = obtainAuthToken(shortCode)
             if token is None :
                 sublime.error_message("Invalid short code entered")        
                 authorize()
+                return
 
-                settings = sublime.load_settings(ColtPreferences.NAME)
-                settings.set("securityToken", token)
-                sublime.save_settings(ColtPreferences.NAME)
-                sublime.status_message("Successfully authorized with COLT")
+            settings = sublime.load_settings(ColtPreferences.NAME)
+            settings.set("securityToken", token)
+            sublime.save_settings(ColtPreferences.NAME)
+            sublime.status_message("Successfully authorized with COLT")
 
-                runAfterAuthorization()
+            runAfterAuthorization()
         except Exception:
             sublime.error_message("Can't authorize with COLT. Make sure COLT is active and running")
             return
