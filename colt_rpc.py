@@ -9,16 +9,32 @@ import threading
 from colt import ColtPreferences
 
 runAfterAuthorization = None
+statusToSet = "Disconnected from COLT"
 
 class ColtConnection(object):
     port = -1
     messageId = 1
     activeSessions = 0
 
-def coltStateUpdate():
+def setStatus(status):
+    sublime.set_timeout(lambda: setStatus_(status), 0)    
+
+def setStatus_(status):
+    view = sublime.active_window().active_view()
+    if not view is None and not statusToSet is None :
+        view.erase_status("colt")
+        view.set_status("colt", status)
+
+def coltStateUpdate():    
     if isConnected() :
         ColtConnection.activeSessions = getActiveSessionsCount()
-
+        if ColtConnection.activeSessions > 0 :
+            setStatus("COLT: " + str(ColtConnection.activeSessions) + " connections")    
+        else :
+            setStatus("Connected to COLT")    
+    else :
+        setStatus("Disconnected from COLT")
+            
 def isConnected():
     return ColtConnection.port != -1
 

@@ -1,5 +1,6 @@
 import os.path
 import subprocess
+import sublime
 
 from xml.etree.ElementTree import Element, SubElement, tostring, parse
 
