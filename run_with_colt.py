@@ -103,7 +103,11 @@ class ColtViewValueCommand(sublime_plugin.WindowCommand):
                         position = getPosition(view)
                         word = view.word(position)
 
-                        print view.substr(word) + " value: " + resultJSON["result"]
+                        result = resultJSON["result"]
+                        if result is None :
+                                print view.substr(word) + " value: unknown"
+                        else :
+                                print view.substr(word) + " value: " + result                        
 
         def is_enabled(self):
                 view = self.window.active_view()
