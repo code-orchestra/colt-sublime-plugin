@@ -98,7 +98,12 @@ class ColtViewValueCommand(sublime_plugin.WindowCommand):
         def run(self):
                 view = self.window.active_view()
                 position = getWordPosition(view)
-                print colt_rpc.getContextForPosition(view.file_name(), position, getContent(view), "VALUE")
+                resultJSON = colt_rpc.getContextForPosition(view.file_name(), position, getContent(view), "VALUE")
+                if resultJSON.has_key("result") :
+                        position = getPosition(view)
+                        word = view.word(position)
+
+                        print view.substr(word) + " value: " + resultJSON["result"]
 
         def is_enabled(self):
                 view = self.window.active_view()
