@@ -55,7 +55,19 @@ class ColtCompletitions(sublime_plugin.EventListener):
                         completitions = []
                         resultJSON = json.loads(result)
                         for resultStr in resultJSON :
-                                completitions.append((resultStr + "\t[COLT]", resultStr))
+                                if "{})" in resultStr :
+                                        resultStr = resultStr.replace("{})", "")
+
+                                replaceStr = resultStr
+                                displayStr = resultStr
+                                cursiveStr = ""
+
+                                if "(" in resultStr :
+                                        replaceStr = resultStr[:resultStr.index("(")]
+                                        displayStr = replaceStr
+                                        cursiveStr = resultStr
+
+                                completitions.append((displayStr + "\t" + cursiveStr + "[COLT]", replaceStr))
 
                 return completitions
 
