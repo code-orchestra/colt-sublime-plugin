@@ -55,7 +55,7 @@ class ColtCompletitions(sublime_plugin.EventListener):
                         completitions = []
                         resultJSON = json.loads(result)
                         for resultStr in resultJSON :
-                                completitions.append((resultStr + "\t(COLT suggested)", resultStr))
+                                completitions.append((resultStr + "\t[COLT]", resultStr))
 
                 return completitions
 
