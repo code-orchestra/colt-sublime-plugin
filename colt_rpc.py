@@ -29,7 +29,8 @@ def coltStateUpdate():
     if isConnected() :
         ColtConnection.activeSessions = getActiveSessionsCount()
         if ColtConnection.activeSessions > 0 :
-            setStatus("COLT: " + str(ColtConnection.activeSessions) + " connections")    
+            # setStatus("COLT: " + str(ColtConnection.activeSessions) + " connections")    
+            setStatus("[~] Connected to COLT")    
         else :
             setStatus("Connected to COLT")    
     else :
