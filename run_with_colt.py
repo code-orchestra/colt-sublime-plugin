@@ -97,6 +97,14 @@ class AbstractColtRunCommand(sublime_plugin.WindowCommand):
 class ColtViewValueCommand(sublime_plugin.WindowCommand):
         def run(self):
                 view = self.window.active_view()
+
+                outputPanel = self.window.get_output_panel("COLT")
+                outputPanel.set_scratch(True)
+                outputPanel.set_read_only(False)
+                outputPanel.set_name("COLT")
+                self.window.run_command("show_panel", {"panel": "output.COLT"})
+                self.window.set_view_index(outputPanel, 1, 0)
+                
                 position = getWordPosition(view)
                 resultJSON = colt_rpc.getContextForPosition(view.file_name(), position, getContent(view), "VALUE")
                 if resultJSON.has_key("result") :
@@ -105,9 +113,16 @@ class ColtViewValueCommand(sublime_plugin.WindowCommand):
 
                         result = resultJSON["result"]
                         if result is None :
-                                print view.substr(word) + " value: unknown"
+                                self.appendToConsole(outputPanel, view.substr(word) + " value: unknown")
                         else :
-                                print view.substr(word) + " value: " + result                        
+                                self.appendToConsole(outputPanel, view.substr(word) + " value: " + result)
+
+        def appendToConsole(self, outputPanel, text):
+                edit = outputPanel.begin_edit("COLT output")
+                edit = outputPanel.begin_edit()
+                outputPanel.insert(edit, outputPanel.size(), text + '\n')
+                outputPanel.end_edit(edit)
+                outputPanel.show(outputPanel.size())
 
         def is_enabled(self):
                 view = self.window.active_view()
