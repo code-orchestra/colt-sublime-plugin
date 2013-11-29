@@ -207,7 +207,7 @@ class ColtViewValueCommand(sublime_plugin.WindowCommand):
                         if result is None :
                                 self.appendToConsole(outputPanel, view.substr(word) + " value: unknown")
                         else :
-                                self.appendToConsole(outputPanel, view.substr(word) + " value: " + result)
+                                self.appendToConsole(outputPanel, result)
 
         def appendToConsole(self, outputPanel, text):
                 edit = outputPanel.begin_edit("COLT output")
