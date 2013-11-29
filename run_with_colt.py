@@ -26,6 +26,13 @@ def getPositionEnd(view):
 def getContent(view):
         return view.substr(sublime.Region(0, view.size()))
 
+class ColtAutosaveListener(sublime_plugin.EventListener):
+        
+        def on_modified(self, view):
+                if colt.isColtFile(view) and colt_rpc.isConnected() and colt_rpc.hasActiveSessions() :
+                        view.run_command("save")
+
+
 class ColtCompletitions(sublime_plugin.EventListener):
         
         def on_query_completions(self, view, prefix, locations):                

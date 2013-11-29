@@ -8,6 +8,9 @@ class ColtPreferences(object):
         NAME = "Preferences.sublime-settings"
 
 def isColtFile(view):
+        if view.file_name() is None :
+                return False
+
         filename = view.file_name().lower()
         return filename.endswith(".js") or filename.endswith(".htm") or filename.endswith(".html")
 
