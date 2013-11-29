@@ -67,12 +67,9 @@ def runCOLT(settings):
 
         platform = sublime.platform()
         if platform == "osx" :
-                # Mac, I hope
                 subprocess.Popen(["open", "-n", "-a", coltPath])
         elif platform == "windows" :
-                # Windows, I suppose
-                # TODO: implement
-                print "Unimplemented"    
+                subprocess.Popen([coltPath + "\\colt.exe"]) 
         else :
                 sublime.error_message("Unsupported platform: " + platform)
 
