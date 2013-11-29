@@ -156,6 +156,16 @@ def getActiveSessionsCount():
 def getContextForPosition(filePath, position, currentContent, contextType):
     return runRPC(ColtConnection.port, "getContextForPosition", [ getSecurityToken(), filePath, position, currentContent, contextType ])
 
+def getMethodId(filePath, position, currentContent):
+    resultJSON = runRPC(ColtConnection.port, "getMethodId", [ getSecurityToken(), filePath, position, currentContent ])
+    if resultJSON.has_key("error") :
+        return None
+
+    return resultJSON["result"]
+
+def runMethod(methodId):
+    runRPC(ColtConnection.port, "runMethod", [ getSecurityToken(), methodId ])
+
 def establishConnection(port):
     ColtConnection.port = port
     sublime.status_message("Established connection with COLT on port " + port)

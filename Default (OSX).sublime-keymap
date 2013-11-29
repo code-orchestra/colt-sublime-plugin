@@ -3,5 +3,6 @@
 { "keys": ["super+shift+f10"], "command": "run_with_colt" },
 { "keys": ["super+f10"], "command": "open_in_colt" },
 { "keys": ["super+shift+r"], "command": "colt_reload" },
-{ "keys": ["shift+f10"], "command": "colt_view_value" }
+{ "keys": ["shift+f10"], "command": "colt_view_value" },
+{ "keys": ["shift+f5"], "command": "colt_run_function" }
 ]

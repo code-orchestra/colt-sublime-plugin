@@ -130,6 +130,39 @@ class AbstractColtRunCommand(sublime_plugin.WindowCommand):
                         return False
                 return colt.isColtFile(self.window.active_view())
 
+class ColtRunFunctionCommand(sublime_plugin.WindowCommand):
+
+        def run(self):
+                view = self.window.active_view()
+
+                fileName = view.file_name()
+                position = getWordPosition(view)
+                content = getContent(view)
+                
+                methodId = None
+                
+                resultJSON = colt_rpc.getContextForPosition(fileName, position, content, "METHOD_ID")     
+                if resultJSON.has_key("result") and not resultJSON["result"] is None :
+                        methodId = resultJSON["result"]
+                else :
+                        methodId = colt_rpc.getMethodId(fileName, position, content)
+
+                if methodId is None :
+                        sublime.error_message("Can't figure out the function ID")
+                        return
+
+                if methodId.startswith('"') :
+                        methodId = methodId[1:len(methodId)-1]
+
+                colt_rpc.runMethod(methodId)
+        
+        def is_enabled(self):
+                view = self.window.active_view()
+                if view is None :
+                        return False
+                return colt.isColtFile(view) and colt_rpc.isConnected() and colt_rpc.hasActiveSessions()
+
+
 class ColtViewValueCommand(sublime_plugin.WindowCommand):
         def run(self):
                 view = self.window.active_view()
