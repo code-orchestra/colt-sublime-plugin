@@ -28,7 +28,7 @@ def getContent(view):
 
 def isAutosaveEnabled():
         settings = sublime.load_settings(ColtPreferences.NAME)
-        return settings.get("autosave", True)
+        return settings.get("autosave", False)
 
 class ToggleAutosaveCommand(sublime_plugin.ApplicationCommand):
         def run(self):
@@ -140,6 +140,9 @@ class ColtGoToDeclarationCommand(sublime_plugin.WindowCommand):
                 content = getContent(view)
 
                 resultJSON = colt_rpc.getDeclarationPosition(fileName, position, content)
+
+                print resultJSON
+
                 if resultJSON.has_key("error") or resultJSON["result"] is None :
                         # sublime.error_message("Can't find a declaration")
                         return
