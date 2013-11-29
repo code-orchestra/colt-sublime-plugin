@@ -8,5 +8,18 @@
 		    { "command": "run_with_colt", "caption": "Run with COLT" },
 		    { "command": "colt_reload", "caption": "Reload in COLT" }     		    
         ]  
-    }   
+    },   
+    {
+		"id": "preferences",
+		"children":
+		[
+			{
+                "caption": "COLT",
+                "children":
+                [
+                    { "command": "toggle_autosave" }
+                ]
+            }
+		]
+    }
 ]

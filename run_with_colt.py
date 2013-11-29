@@ -26,10 +26,27 @@ def getPositionEnd(view):
 def getContent(view):
         return view.substr(sublime.Region(0, view.size()))
 
+def isAutosaveEnabled():
+        settings = sublime.load_settings(ColtPreferences.NAME)
+        return settings.get("autosave", True)
+
+class ToggleAutosaveCommand(sublime_plugin.ApplicationCommand):
+        def run(self):
+                currentValue = isAutosaveEnabled()
+                settings = sublime.load_settings(ColtPreferences.NAME)
+                settings.set("autosave", not currentValue)
+                sublime.save_settings(ColtPreferences.NAME)
+
+        def description(self):
+                if isAutosaveEnabled() :
+                        return "Disable Autosave"
+                else :
+                        return "Enable Autosave"
+
 class ColtAutosaveListener(sublime_plugin.EventListener):
         
         def on_modified(self, view):
-                if colt.isColtFile(view) and colt_rpc.isConnected() and colt_rpc.hasActiveSessions() :
+                if colt.isColtFile(view) and colt_rpc.isConnected() and colt_rpc.hasActiveSessions() and isAutosaveEnabled() :
                         view.run_command("save")
 
 
