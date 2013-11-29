@@ -6,7 +6,11 @@
             { "caption": "-" },
 		    { "command": "start_colt", "caption": "Start COLT" },
 		    { "command": "run_with_colt", "caption": "Run with COLT" },
-		    { "command": "colt_reload", "caption": "Reload in COLT" }     		    
+		    { "command": "colt_reload", "caption": "Reload in COLT" },
+		    { "caption": "-" },
+		    { "command": "colt_view_value", "caption": "Show Value in Console" },
+		    { "command": "colt_run_function", "caption": "Execute Function" },
+		    { "command": "colt_go_to_declaration", "caption": "Go to Declaration" }	
         ]  
     },   
     {
