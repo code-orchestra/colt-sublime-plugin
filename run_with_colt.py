@@ -130,6 +130,35 @@ class AbstractColtRunCommand(sublime_plugin.WindowCommand):
                         return False
                 return colt.isColtFile(self.window.active_view())
 
+class ColtGoToDeclarationCommand(sublime_plugin.WindowCommand):
+
+        def run(self):
+                view = self.window.active_view()
+
+                fileName = view.file_name()
+                position = getWordPosition(view)
+                content = getContent(view)
+
+                resultJSON = colt_rpc.getDeclarationPosition(fileName, position, content)
+                if resultJSON.has_key("error") or resultJSON["result"] is None :
+                        # sublime.error_message("Can't find a declaration")
+                        return
+
+                position = resultJSON["result"]["position"]
+                filePath = resultJSON["result"]["filePath"]
+
+                targetView = self.window.open_file(filePath)
+                targetView.sel().clear()
+                targetView.sel().add(sublime.Region(position))
+                
+                targetView.show_at_center(position)
+
+        def is_enabled(self):
+                view = self.window.active_view()
+                if view is None :
+                        return False
+                return colt.isColtFile(view) and colt_rpc.isConnected() and colt_rpc.hasActiveSessions()
+
 class ColtRunFunctionCommand(sublime_plugin.WindowCommand):
 
         def run(self):
@@ -161,7 +190,6 @@ class ColtRunFunctionCommand(sublime_plugin.WindowCommand):
                 if view is None :
                         return False
                 return colt.isColtFile(view) and colt_rpc.isConnected() and colt_rpc.hasActiveSessions()
-
 
 class ColtViewValueCommand(sublime_plugin.WindowCommand):
         def run(self):

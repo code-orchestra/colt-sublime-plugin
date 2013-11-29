@@ -153,6 +153,9 @@ def getActiveSessionsCount():
     except Exception :
         return 0
 
+def getDeclarationPosition(filePath, position, currentContent):
+    return runRPC(ColtConnection.port, "getDeclarationPosition", [ getSecurityToken(), filePath, position, currentContent ])
+
 def getContextForPosition(filePath, position, currentContent, contextType):
     return runRPC(ColtConnection.port, "getContextForPosition", [ getSecurityToken(), filePath, position, currentContent, contextType ])
 
