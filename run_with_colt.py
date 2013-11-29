@@ -150,6 +150,7 @@ class ColtGoToDeclarationCommand(sublime_plugin.WindowCommand):
                 targetView = self.window.open_file(filePath)
                 targetView.sel().clear()
                 targetView.sel().add(sublime.Region(position))
+                targetView.sel().add(sublime.Region(position))
                 
                 targetView.show_at_center(position)
 
@@ -168,13 +169,7 @@ class ColtRunFunctionCommand(sublime_plugin.WindowCommand):
                 position = getWordPosition(view)
                 content = getContent(view)
                 
-                methodId = None
-                
-                resultJSON = colt_rpc.getContextForPosition(fileName, position, content, "METHOD_ID")     
-                if resultJSON.has_key("result") and not resultJSON["result"] is None :
-                        methodId = resultJSON["result"]
-                else :
-                        methodId = colt_rpc.getMethodId(fileName, position, content)
+                methodId = colt_rpc.getMethodId(fileName, position, content)
 
                 if methodId is None :
                         sublime.error_message("Can't figure out the function ID")
