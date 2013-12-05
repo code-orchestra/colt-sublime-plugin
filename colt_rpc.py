@@ -73,10 +73,10 @@ def makeNewSecurityToken(newRequest, window):
         try :
             requestShortCode()
         except Exception :
-            sublime.error_message("Can't request an authorization key from COLT. Make sure COLT is active and running")
+            sublime.error_message("Authorization request failed. Make sure COLT is active and running.")
             return
 
-    window.show_input_panel("Enter the short key at the bottom of the screen displayed in COLT:", "", onShortKeyInput, None, None)
+    window.show_input_panel("Enter authorization code displayed in top of COLT window:", "", onShortKeyInput, None, None)
 
 def onShortKeyInput(shortCode):    
     if shortCode :
@@ -94,7 +94,7 @@ def onShortKeyInput(shortCode):
 
             runAfterAuthorization()
         except Exception:
-            sublime.error_message("Can't authorize with COLT. Make sure COLT is active and running")
+            sublime.error_message("Unable to authorize with COLT. Make sure COLT is active and running")
             return
     else :
         sublime.error_message("Short authorization key can't be empty")  
