@@ -159,6 +159,12 @@ def getDeclarationPosition(filePath, position, currentContent):
 def getContextForPosition(filePath, position, currentContent, contextType):
     return runRPC(ColtConnection.port, "getContextForPosition", [ getSecurityToken(), filePath, position, currentContent, contextType ])
 
+def getCallCount(filePath, position, currentContent):
+    return runRPC(ColtConnection.port, "getCallCount", [ getSecurityToken(), filePath, position, currentContent ])
+
+def resetCallCounts():
+    return runRPC(ColtConnection.port, "resetCallCounts", [ getSecurityToken() ])
+
 def getMethodId(filePath, position, currentContent):
     resultJSON = runRPC(ColtConnection.port, "getMethodId", [ getSecurityToken(), filePath, position, currentContent ])
     if resultJSON.has_key("error") :
