@@ -248,7 +248,13 @@ class ColtViewValueCommand(sublime_plugin.WindowCommand):
                 self.window.set_view_index(outputPanel, 1, 0)
                 
                 position = getWordPosition(view)
-                resultJSON = colt_rpc.getContextForPosition(view.file_name(), position, getContent(view), "VALUE")
+                
+                expression = None
+                for sel in view.sel() :
+                    if expression is None :
+                        expression = view.substr(sel)
+                
+                resultJSON = colt_rpc.evaluateExpression(view.file_name(), expression, position, getContent(view))
                 if resultJSON.has_key("result") :
                         position = getPosition(view)
                         word = view.word(position)

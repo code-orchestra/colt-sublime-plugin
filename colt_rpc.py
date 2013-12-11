@@ -159,6 +159,9 @@ def getDeclarationPosition(filePath, position, currentContent):
 def getContextForPosition(filePath, position, currentContent, contextType):
     return runRPC(ColtConnection.port, "getContextForPosition", [ getSecurityToken(), filePath, position, currentContent, contextType ])
 
+def evaluateExpression(filePath, expression, position, currentContent):
+    return runRPC(ColtConnection.port, "evaluateExpression", [ getSecurityToken(), filePath, expression, position, currentContent ])
+
 def getCallCount(filePath, position, currentContent):
     return runRPC(ColtConnection.port, "getCallCount", [ getSecurityToken(), filePath, position, currentContent ])
 
