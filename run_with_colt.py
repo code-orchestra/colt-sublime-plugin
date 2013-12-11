@@ -211,8 +211,6 @@ class ColtViewCallCountCommand(sublime_plugin.WindowCommand):
                 position = getWordPosition(view)
                 resultJSON = colt_rpc.getCallCount(view.file_name(), position, getContent(view))
 
-                print resultJSON
-
                 if resultJSON.has_key("result") :
                         position = getPosition(view)
                         word = view.word(position)
