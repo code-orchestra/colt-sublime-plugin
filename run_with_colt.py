@@ -151,7 +151,6 @@ class ColtGoToDeclarationCommand(sublime_plugin.WindowCommand):
                 targetView = self.window.open_file(filePath)
                 targetView.sel().clear()
                 targetView.sel().add(sublime.Region(position))
-                targetView.sel().add(sublime.Region(position))
                 
                 targetView.show_at_center(position)
 
