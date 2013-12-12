@@ -2,6 +2,7 @@ import sublime, sublime_plugin
 import colt, colt_rpc
 import os.path
 import json
+import re
 
 from colt import ColtPreferences
 from colt_rpc import ColtConnection
@@ -308,11 +309,23 @@ class StartColtCommand(AbstractColtRunCommand):
 
 class OpenInColtCommand(AbstractColtRunCommand):
 
+        html = None
+
         def run(self):
                 settings = self.getSettings()
+                
+                # Check the file name
+                file = self.window.active_view().file_name()
+                if re.match('.*\\.html?$', file): # r'' for v3
+                    OpenInColtCommand.html = file
+                    
+                if OpenInColtCommand.html is None :
+                    # Error message
+                    sublime.error_message('This tab is not html file. Please open project main html and try again.')
+                    return
 
                 # Export COLT project
-                coltProjectFilePath = colt.exportProject(self.window)
+                coltProjectFilePath = colt.exportProject(self.window, OpenInColtCommand.html)
 
                 # Add project to workset file
                 colt.addToWorkingSet(coltProjectFilePath)
@@ -328,9 +341,19 @@ class RunWithColtCommand(AbstractColtRunCommand):
 
         def run(self):
                 settings = self.getSettings()
+                
+                # Check the file name
+                file = self.window.active_view().file_name()
+                if re.match('.*\\.html?$', file): # r'' for v3
+                    OpenInColtCommand.html = file
+                    
+                if OpenInColtCommand.html is None :
+                    # Error message
+                    sublime.error_message('This tab is not html file. Please open project main html and try again.')
+                    return
 
                 # Export COLT project
-                coltProjectFilePath = colt.exportProject(self.window)
+                coltProjectFilePath = colt.exportProject(self.window, OpenInColtCommand.html)
 
                 # Add project to workset file
                 colt.addToWorkingSet(coltProjectFilePath)

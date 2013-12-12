@@ -73,8 +73,7 @@ def runCOLT(settings):
         else :
                 sublime.error_message("Unsupported platform: " + platform)
 
-def exportProject(window):
-        mainDocumentPath = window.active_view().file_name()
+def exportProject(window, mainDocumentPath):
         mainDocumentName = os.path.splitext(os.path.basename(mainDocumentPath))[0]
         basedir = os.path.dirname(mainDocumentPath) # TODO: ask user for base dir?
 
@@ -83,6 +82,7 @@ def exportProject(window):
 
         rootElement.set("projectName", mainDocumentName)
         rootElement.set("projectType", "JS")
+        rootElement.set("isPlugin", "true")
 
         # Paths
         pathsElement = SubElement(rootElement, "paths")
