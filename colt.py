@@ -83,6 +83,7 @@ def exportProject(window):
 
         rootElement.set("projectName", mainDocumentName)
         rootElement.set("projectType", "JS")
+        rootElement.set("isPlugin", "true")
 
         # Paths
         pathsElement = SubElement(rootElement, "paths")
