@@ -287,7 +287,7 @@ class ColtReloadCommand(sublime_plugin.WindowCommand):
                 view = self.window.active_view()
                 if view is None :
                         return False
-                return colt.isColtFile(view) and colt_rpc.isConnected() and colt_rpc.hasActiveSessions()
+                return colt_rpc.isConnected() and colt_rpc.hasActiveSessions()
 
 class ColtClearLogCommand(sublime_plugin.WindowCommand):
         def run(self):
@@ -297,7 +297,7 @@ class ColtClearLogCommand(sublime_plugin.WindowCommand):
                 view = self.window.active_view()
                 if view is None :
                         return False
-                return colt.isColtFile(view) and colt_rpc.isConnected() and colt_rpc.hasActiveSessions()
+                return colt_rpc.isConnected() and colt_rpc.hasActiveSessions()
 
 class StartColtCommand(AbstractColtRunCommand):
 
