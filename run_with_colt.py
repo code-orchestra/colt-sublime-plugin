@@ -152,7 +152,6 @@ class ColtGoToDeclarationCommand(sublime_plugin.WindowCommand):
                 targetView = self.window.open_file(filePath)
                 targetView.sel().clear()
                 targetView.sel().add(sublime.Region(position))
-                targetView.sel().add(sublime.Region(position))
                 
                 targetView.show_at_center(position)
 
@@ -211,8 +210,6 @@ class ColtViewCallCountCommand(sublime_plugin.WindowCommand):
                 
                 position = getWordPosition(view)
                 resultJSON = colt_rpc.getCallCount(view.file_name(), position, getContent(view))
-
-                print resultJSON
 
                 if resultJSON.has_key("result") :
                         position = getPosition(view)
