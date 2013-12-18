@@ -153,6 +153,11 @@ class ColtGoToDeclarationCommand(sublime_plugin.WindowCommand):
                 targetView.sel().add(sublime.Region(position))
                 
                 targetView.show_at_center(position)
+                
+                # work around sublime bug with caret position not refreshing
+                bug = [s for s in targetView.sel()]
+                targetView.add_regions("bug", bug, "bug", "dot", sublime.HIDDEN | sublime.PERSISTENT)
+                targetView.erase_regions("bug")
 
         def is_enabled(self):
                 view = self.window.active_view()
