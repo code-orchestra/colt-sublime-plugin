@@ -225,6 +225,8 @@ class ColtRunFunctionCommand(sublime_plugin.WindowCommand):
                         methodId = methodId[1:len(methodId)-1]
 
                 colt_rpc.runMethod(methodId)
+                
+                self.window.run_command("get_all_counts")
         
         def is_enabled(self):
                 view = self.window.active_view()
@@ -235,6 +237,8 @@ class ColtRunFunctionCommand(sublime_plugin.WindowCommand):
 class ColtResetCallCountsCommand(sublime_plugin.WindowCommand):
         def run(self):
                 colt_rpc.resetCallCounts()
+
+                self.window.run_command("get_all_counts")
 
         def is_enabled(self):
                 view = self.window.active_view()
