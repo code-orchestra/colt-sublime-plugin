@@ -131,6 +131,50 @@ class AbstractColtRunCommand(sublime_plugin.WindowCommand):
                         return False
                 return colt.isColtFile(self.window.active_view())
 
+class GetAllCountsCommand(sublime_plugin.WindowCommand):
+    
+        def run(self):
+            # but 1st, clear every region this command could have created
+            for view in self.window.views():
+                for p in range (0, view.size()):
+                    view.erase_regions("counts." + str(p))
+                        
+            if ColtConnection.activeSessions > 0:
+                
+                # getMethodCounts
+                # {u'jsonrpc': u'2.0', u'id': 77, u'result': [{u'count': 1, u'position': 339, u'filePath': u'/Users/makc/Downloads/d3/bubles.js'}, ...
+                resultJSON = colt_rpc.getMethodCounts()
+                
+                if resultJSON.has_key("error") or resultJSON["result"] is None :
+                        # sublime.error_message("Can't read method counts")
+                        return
+                        
+                for info in resultJSON["result"]:
+
+                    position = info["position"]
+                    filePath = info["filePath"]
+                                        
+                    count = info["count"]
+                    if count > 0:
+
+                        print(" - pos: " + str(position) + ", path: " + filePath + ", count: " + str(count))
+                        
+                        if count > 9:
+                            count = "infinity"
+                    
+                        #targetView = self.window.open_file(filePath)
+                        for view in self.window.views():
+                            if view.file_name() == filePath:
+                                view.add_regions("counts." + str(position), [sublime.Region(position)],
+                                    "scope", "../User/icons/" + str(count) + "@2x", sublime.HIDDEN | sublime.PERSISTENT)
+
+def callCountsUpdate():
+    sublime.active_window().run_command("get_all_counts")
+    sublime.set_timeout(callCountsUpdate, 3000)
+    
+sublime.set_timeout(callCountsUpdate, 3000)
+
+                
 class ColtGoToDeclarationCommand(sublime_plugin.WindowCommand):
 
         def run(self):
