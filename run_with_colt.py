@@ -156,13 +156,9 @@ class GetAllCountsCommand(sublime_plugin.WindowCommand):
                                         
                     count = info["count"]
                     if count > 0:
-
-                        print(" - pos: " + str(position) + ", path: " + filePath + ", count: " + str(count))
-                        
                         if count > 9:
                             count = "infinity"
                     
-                        #targetView = self.window.open_file(filePath)
                         for view in self.window.views():
                             if view.file_name() == filePath:
                                 view.add_regions("counts." + str(position), [sublime.Region(position)],
