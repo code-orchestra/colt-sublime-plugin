@@ -164,8 +164,28 @@ class GetAllCountsCommand(sublime_plugin.WindowCommand):
                                 view.add_regions("counts." + str(position), [sublime.Region(position)],
                                     "scope", "../User/icons/" + str(count) + "@2x", sublime.HIDDEN | sublime.PERSISTENT)
 
+class ShowLastErrorCommand(sublime_plugin.WindowCommand):
+    def run(self):
+        # but 1st, clear every region this command could have created
+        for view in self.window.views():
+            view.erase_regions("error.colt")
+                
+        if ColtConnection.activeSessions > 0:
+            resultJSON = colt_rpc.getLastRuntimeError();
+                
+            if resultJSON.has_key("error") or resultJSON["result"] is None :
+                # sublime.error_message("Can't read method counts")
+                return
+            
+            for view in self.window.views():
+                if view.file_name() == resultJSON["result"]["filePath"]:
+                    view.add_regions("error.colt", [sublime.Region(resultJSON["result"]["position"])],
+                        "scope", "../User/icons/error@2x", sublime.HIDDEN | sublime.PERSISTENT)
+                    
+
 def callCountsUpdate():
     sublime.active_window().run_command("get_all_counts")
+    sublime.active_window().run_command("show_last_error")
     sublime.set_timeout(callCountsUpdate, 3000)
     
 sublime.set_timeout(callCountsUpdate, 3000)

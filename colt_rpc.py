@@ -141,6 +141,12 @@ def reload():
 def clearLog():
     return runRPC(ColtConnection.port, "clearLog", [ getSecurityToken() ])
 
+def getMethodCounts():
+    return runRPC(ColtConnection.port, "getMethodCounts", [ getSecurityToken() ])
+
+def getLastRuntimeError():
+    return runRPC(ColtConnection.port, "getLastRuntimeError", [ getSecurityToken() ])
+
 def startLive():
     securityToken = getSecurityToken()
     if not getSecurityToken() is None :                        
