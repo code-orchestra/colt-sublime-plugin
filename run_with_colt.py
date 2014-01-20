@@ -76,8 +76,8 @@ class ColtCompletitions(sublime_plugin.EventListener):
                         return []
 
                 result = response["result"]
+                completitions = []
                 if not result is None :
-                        completitions = []
                         resultJSON = json.loads(result)
                         for resultStr in resultJSON :
                                 if "{})" in resultStr :
