@@ -132,12 +132,12 @@ class AbstractColtRunCommand(sublime_plugin.WindowCommand):
                 return colt.isColtFile(self.window.active_view())
 
 class GetAllCountsCommand(sublime_plugin.WindowCommand):
+        ranges = []
     
         def run(self):
             # but 1st, clear every region this command could have created
-            for view in self.window.views():
-                for p in range (0, view.size()):
-                    view.erase_regions("counts." + str(p))
+            for p in GetAllCountsCommand.ranges:
+                p[0].erase_regions(p[1])
                         
             if ColtConnection.activeSessions > 0:
                 
@@ -163,6 +163,7 @@ class GetAllCountsCommand(sublime_plugin.WindowCommand):
                             if view.file_name() == filePath:
                                 view.add_regions("counts." + str(position), [sublime.Region(position)],
                                     "scope", "../User/icons/" + str(count) + "@2x", sublime.HIDDEN | sublime.PERSISTENT)
+                                GetAllCountsCommand.ranges.append([view, "counts." + str(position)])
 
 class ShowLastErrorCommand(sublime_plugin.WindowCommand):
     def run(self):
@@ -183,12 +184,36 @@ class ShowLastErrorCommand(sublime_plugin.WindowCommand):
                         "scope", "../User/icons/error@2x", sublime.HIDDEN | sublime.PERSISTENT)
                     
 
-def callCountsUpdate():
-    sublime.active_window().run_command("get_all_counts")
-    sublime.active_window().run_command("show_last_error")
-    sublime.set_timeout(callCountsUpdate, 3000)
+# ST2 version of http://www.sublimetext.com/docs/plugin-examples Idle Watcher
+class IdleWatcher(sublime_plugin.EventListener):
+    pending = 0
     
-sublime.set_timeout(callCountsUpdate, 3000)
+    def handleTimeout(self, view):
+        self.pending = self.pending - 1
+        if self.pending == 0:
+            # There are no more queued up calls to handleTimeout, so it must have
+            # been 3000ms since the last modification
+            self.onIdle(view)
+
+    def onModified(self, view):
+        self.pending = self.pending + 1
+        # Ask for handleTimeout to be called in 3000ms
+        sublime.set_timeout(functools.partial(self.handleTimeout, view), 3000)
+
+    def onIdle(self, view):
+        #print "No activity in the past 3000ms"
+        sublime.active_window().run_command("get_all_counts")
+        sublime.active_window().run_command("show_last_error")
+        sublime.set_timeout(functools.partial(self.onModified, view), 3000)
+
+    def on_modified(self, view):
+        self.onModified(view)
+
+    def on_selection_modified(self, view):
+        self.onModified(view)
+    
+    def on_activated(self, view):
+        self.onModified(view)
 
                 
 class ColtGoToDeclarationCommand(sublime_plugin.WindowCommand):
