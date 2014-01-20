@@ -77,6 +77,10 @@ def exportProject(window, mainDocumentPath):
         mainDocumentName = os.path.splitext(os.path.basename(mainDocumentPath))[0]
         basedir = os.path.dirname(mainDocumentPath) # TODO: ask user for base dir?
 
+        folders = window.folders()
+        if len(folders) > 0:
+                basedir = folders[0]
+
         # Root
         rootElement = Element("xml")
 
