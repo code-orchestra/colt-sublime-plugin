@@ -59,7 +59,7 @@ def addToWorkingSet(newProjectPath):
                 projectElement.set("path", projectPath)
 
         workingSetFile = open(workingSetFilePath, "w")
-        workingSetFile.write(tostring(workingSetElement).replace("\\\\","\\"))
+        workingSetFile.write(tostring(workingSetElement))
         workingSetFile.close()
 
 def runCOLT(settings):
