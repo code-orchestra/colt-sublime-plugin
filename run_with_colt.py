@@ -201,10 +201,18 @@ class IdleWatcher(sublime_plugin.EventListener):
         # Ask for handleTimeout to be called in 800ms
         sublime.set_timeout(functools.partial(self.handleTimeout, view), 800)
 
+    def printLogs(self):
+        resultJSON = colt_rpc.getLastLogMessages()
+        if resultJSON.has_key("error") or resultJSON["result"] is None :
+            return
+        for message in resultJSON["result"] :
+            print("[COLT] " + message)
+
     def onIdle(self, view):
         #print "No activity in the past 800ms"
         sublime.active_window().run_command("get_all_counts")
         sublime.active_window().run_command("show_last_error")
+        self.printLogs()
         sublime.set_timeout(functools.partial(self.onModified, view), 800)
 
     def on_modified(self, view):
