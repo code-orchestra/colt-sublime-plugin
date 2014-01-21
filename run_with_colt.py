@@ -1,5 +1,6 @@
 import sublime, sublime_plugin
 import colt, colt_rpc
+import functools
 import os.path
 import json
 import re
@@ -162,7 +163,7 @@ class GetAllCountsCommand(sublime_plugin.WindowCommand):
                         for view in self.window.views():
                             if view.file_name() == filePath:
                                 view.add_regions("counts." + str(position), [sublime.Region(position)],
-                                    "scope", "../User/icons/" + str(count) + "@2x", sublime.HIDDEN | sublime.PERSISTENT)
+                                    "scope", "../COLT/icons/" + str(count) + "@2x", sublime.HIDDEN | sublime.PERSISTENT)
                                 GetAllCountsCommand.ranges.append([view, "counts." + str(position)])
 
 class ShowLastErrorCommand(sublime_plugin.WindowCommand):
@@ -181,7 +182,7 @@ class ShowLastErrorCommand(sublime_plugin.WindowCommand):
             for view in self.window.views():
                 if view.file_name() == resultJSON["result"]["filePath"]:
                     view.add_regions("error.colt", [sublime.Region(resultJSON["result"]["position"])],
-                        "scope", "../User/icons/error@2x", sublime.HIDDEN | sublime.PERSISTENT)
+                        "scope", "../COLT/icons/error@2x", sublime.HIDDEN | sublime.PERSISTENT)
                     
 
 # ST2 version of http://www.sublimetext.com/docs/plugin-examples Idle Watcher
