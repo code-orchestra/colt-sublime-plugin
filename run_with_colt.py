@@ -139,6 +139,8 @@ class GetAllCountsCommand(sublime_plugin.WindowCommand):
             # but 1st, clear every region this command could have created
             for p in GetAllCountsCommand.ranges:
                 p[0].erase_regions(p[1])
+                
+            GetAllCountsCommand.ranges = []
                         
             if ColtConnection.activeSessions > 0:
                 
