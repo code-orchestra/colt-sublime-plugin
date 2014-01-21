@@ -193,19 +193,19 @@ class IdleWatcher(sublime_plugin.EventListener):
         self.pending = self.pending - 1
         if self.pending == 0:
             # There are no more queued up calls to handleTimeout, so it must have
-            # been 3000ms since the last modification
+            # been 800ms since the last modification
             self.onIdle(view)
 
     def onModified(self, view):
         self.pending = self.pending + 1
-        # Ask for handleTimeout to be called in 3000ms
-        sublime.set_timeout(functools.partial(self.handleTimeout, view), 3000)
+        # Ask for handleTimeout to be called in 800ms
+        sublime.set_timeout(functools.partial(self.handleTimeout, view), 800)
 
     def onIdle(self, view):
-        #print "No activity in the past 3000ms"
+        #print "No activity in the past 800ms"
         sublime.active_window().run_command("get_all_counts")
         sublime.active_window().run_command("show_last_error")
-        sublime.set_timeout(functools.partial(self.onModified, view), 3000)
+        sublime.set_timeout(functools.partial(self.onModified, view), 800)
 
     def on_modified(self, view):
         self.onModified(view)
