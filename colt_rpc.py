@@ -190,7 +190,7 @@ def runMethod(methodId):
 def establishConnection(port):
     ColtConnection.port = port
     sublime.status_message("Established connection with COLT on port " + port)
-    time.sleep(2)
+    #time.sleep(2)
 
 def initAndConnect(settings, projectPath): 
     sublime.status_message("Trying to establish connection with COLT...")
