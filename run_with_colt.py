@@ -1,5 +1,6 @@
 import sublime, sublime_plugin
 import colt, colt_rpc
+import functools
 import os.path
 import json
 import re
@@ -131,6 +132,91 @@ class AbstractColtRunCommand(sublime_plugin.WindowCommand):
                         return False
                 return colt.isColtFile(self.window.active_view())
 
+class GetAllCountsCommand(sublime_plugin.WindowCommand):
+        ranges = []
+    
+        def run(self):
+            # but 1st, clear every region this command could have created
+            for p in GetAllCountsCommand.ranges:
+                p[0].erase_regions(p[1])
+                        
+            if ColtConnection.activeSessions > 0:
+                
+                # getMethodCounts
+                # {u'jsonrpc': u'2.0', u'id': 77, u'result': [{u'count': 1, u'position': 339, u'filePath': u'/Users/makc/Downloads/d3/bubles.js'}, ...
+                resultJSON = colt_rpc.getMethodCounts()
+                
+                if resultJSON.has_key("error") or resultJSON["result"] is None :
+                        # sublime.error_message("Can't read method counts")
+                        return
+                        
+                for info in resultJSON["result"]:
+
+                    position = info["position"]
+                    filePath = info["filePath"]
+                                        
+                    count = info["count"]
+                    if count > 0:
+                        if count > 9:
+                            count = "infinity"
+                    
+                        for view in self.window.views():
+                            if view.file_name() == filePath:
+                                view.add_regions("counts." + str(position), [sublime.Region(position)],
+                                    "scope", "../COLT/icons/" + str(count) + "@2x", sublime.HIDDEN | sublime.PERSISTENT)
+                                GetAllCountsCommand.ranges.append([view, "counts." + str(position)])
+
+class ShowLastErrorCommand(sublime_plugin.WindowCommand):
+    def run(self):
+        # but 1st, clear every region this command could have created
+        for view in self.window.views():
+            view.erase_regions("error.colt")
+                
+        if ColtConnection.activeSessions > 0:
+            resultJSON = colt_rpc.getLastRuntimeError();
+                
+            if resultJSON.has_key("error") or resultJSON["result"] is None :
+                # sublime.error_message("Can't read method counts")
+                return
+            
+            for view in self.window.views():
+                if view.file_name() == resultJSON["result"]["filePath"]:
+                    view.add_regions("error.colt", [sublime.Region(resultJSON["result"]["position"])],
+                        "scope", "../COLT/icons/error@2x", sublime.HIDDEN | sublime.PERSISTENT)
+                    
+
+# ST2 version of http://www.sublimetext.com/docs/plugin-examples Idle Watcher
+class IdleWatcher(sublime_plugin.EventListener):
+    pending = 0
+    
+    def handleTimeout(self, view):
+        self.pending = self.pending - 1
+        if self.pending == 0:
+            # There are no more queued up calls to handleTimeout, so it must have
+            # been 3000ms since the last modification
+            self.onIdle(view)
+
+    def onModified(self, view):
+        self.pending = self.pending + 1
+        # Ask for handleTimeout to be called in 3000ms
+        sublime.set_timeout(functools.partial(self.handleTimeout, view), 3000)
+
+    def onIdle(self, view):
+        #print "No activity in the past 3000ms"
+        sublime.active_window().run_command("get_all_counts")
+        sublime.active_window().run_command("show_last_error")
+        sublime.set_timeout(functools.partial(self.onModified, view), 3000)
+
+    def on_modified(self, view):
+        self.onModified(view)
+
+    def on_selection_modified(self, view):
+        self.onModified(view)
+    
+    def on_activated(self, view):
+        self.onModified(view)
+
+                
 class ColtGoToDeclarationCommand(sublime_plugin.WindowCommand):
 
         def run(self):
@@ -185,6 +271,8 @@ class ColtRunFunctionCommand(sublime_plugin.WindowCommand):
                         methodId = methodId[1:len(methodId)-1]
 
                 colt_rpc.runMethod(methodId)
+                
+                self.window.run_command("get_all_counts")
         
         def is_enabled(self):
                 view = self.window.active_view()
@@ -195,6 +283,8 @@ class ColtRunFunctionCommand(sublime_plugin.WindowCommand):
 class ColtResetCallCountsCommand(sublime_plugin.WindowCommand):
         def run(self):
                 colt_rpc.resetCallCounts()
+
+                self.window.run_command("get_all_counts")
 
         def is_enabled(self):
                 view = self.window.active_view()
