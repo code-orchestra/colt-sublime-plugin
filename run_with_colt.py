@@ -183,7 +183,9 @@ class ShowLastErrorCommand(sublime_plugin.WindowCommand):
             
             for view in self.window.views():
                 if view.file_name() == resultJSON["result"]["filePath"]:
-                    view.add_regions("error.colt", [sublime.Region(resultJSON["result"]["position"])],
+                    position = resultJSON["result"]["position"]
+                    view.erase_regions("counts." + str(position))
+                    view.add_regions("error.colt", [sublime.Region(position)],
                         "scope", "../COLT/icons/error@2x", sublime.HIDDEN | sublime.PERSISTENT)
                     
 
