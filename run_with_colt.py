@@ -202,13 +202,14 @@ class IdleWatcher(sublime_plugin.EventListener):
         sublime.set_timeout(functools.partial(self.handleTimeout, view), 800)
 
     def printLogs(self):
-        resultJSON = colt_rpc.getLastLogMessages()
-        if resultJSON.has_key("error") or resultJSON["result"] is None :
-            return
-        if len(resultJSON["result"]) > 0 :
-            for message in resultJSON["result"] :
-                print("[COLT] " + message)
-            sublime.active_window().run_command("show_panel", {"panel": "console", "toggle": False})
+        if ColtConnection.activeSessions > 0:
+            resultJSON = colt_rpc.getLastLogMessages()
+            if resultJSON.has_key("error") or resultJSON["result"] is None :
+                return
+            if len(resultJSON["result"]) > 0 :
+                for message in resultJSON["result"] :
+                    print("[COLT] " + message)
+                sublime.active_window().run_command("show_panel", {"panel": "console", "toggle": False})
 
     def onIdle(self, view):
         #print "No activity in the past 800ms"
