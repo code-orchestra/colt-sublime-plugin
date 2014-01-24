@@ -17,11 +17,34 @@
 		"id": "preferences",
 		"children":
 		[
-			{
-                "caption": "COLT",
+            {
+                "caption": "Package Settings",
+                "mnemonic": "P",
+                "id": "package-settings",
                 "children":
                 [
-                    { "command": "toggle_autosave" }
+                    {
+                        "caption": "COLT",
+                        "children":
+                        [
+							{ "command": "toggle_autosave" },
+							{ "caption": "-" },
+                            {
+                                "command": "open_file", "args":
+                                {
+                                    "file": "${packages}/COLT/Default (${platform}).sublime-keymap"
+                                },
+                                "caption": "Key Bindings – Default"
+                            },
+                            {
+                                "command": "open_file", "args":
+                                {
+                                    "file": "${packages}/User/Default (${platform}).sublime-keymap"
+                                },
+                                "caption": "Key Bindings – User"
+                            }
+                        ]
+                    }
                 ]
             }
 		]
