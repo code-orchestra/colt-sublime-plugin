@@ -177,6 +177,9 @@ def getCallCount(filePath, position, currentContent):
 def resetCallCounts():
     return runRPC(ColtConnection.port, "resetCallCounts", [ getSecurityToken() ])
 
+def getLastLogMessages():
+    return runRPC(ColtConnection.port, "getLastLogMessages", [ getSecurityToken() ])
+
 def getMethodId(filePath, position, currentContent):
     resultJSON = runRPC(ColtConnection.port, "getMethodId", [ getSecurityToken(), filePath, position, currentContent ])
     if resultJSON.has_key("error") :

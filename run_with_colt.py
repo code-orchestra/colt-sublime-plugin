@@ -192,6 +192,7 @@ class ShowLastErrorCommand(sublime_plugin.WindowCommand):
 # ST2 version of http://www.sublimetext.com/docs/plugin-examples Idle Watcher
 class IdleWatcher(sublime_plugin.EventListener):
     pending = 0
+    ranges = []
     
     def handleTimeout(self, view):
         self.pending = self.pending - 1
@@ -205,10 +206,55 @@ class IdleWatcher(sublime_plugin.EventListener):
         # Ask for handleTimeout to be called in 800ms
         sublime.set_timeout(functools.partial(self.handleTimeout, view), 800)
 
+    def printLogs(self):
+        if ColtConnection.activeSessions > 0:
+            resultJSON = colt_rpc.getLastLogMessages()
+            if resultJSON.has_key("error") or resultJSON["result"] is None :
+                return
+            if len(resultJSON["result"]) > 0 :
+                
+                syntaxErrors = []
+                
+                for info in resultJSON["result"] :
+                    if info["position"] > -1 :
+                        # syntax error
+                        if (len (info["message"]) == 0) :
+                            # empty syntax error message signals that corresponding page was reloaded
+                            for p in IdleWatcher.ranges:
+                                if p[0].file_name() == info["filePath"]:
+                                    p[0].erase_regions(p[1])
+                                    IdleWatcher.ranges.remove(p)
+                        else :
+                            # add to the list and print
+                            syntaxErrors.append(info)
+                            print("[COLT] " + info["message"])
+                    else :
+                        # just print it
+                        print("[COLT] " + info["message"])
+                    
+                # now show syntax errors
+                for info in syntaxErrors :
+                    for view in sublime.active_window().views():
+                        if view.file_name() == info["filePath"]:
+                            position = info["position"]
+                            view.add_regions("error." + str(position), [sublime.Region(position)],
+                                "scope", "../COLT/icons/error@2x", sublime.HIDDEN)
+                            IdleWatcher.ranges.append([view, "error." + str(position)])
+                        
+                    
+                sublime.active_window().run_command("show_panel", {"panel": "console", "toggle": False})
+        else :
+            # clear all ranges
+            for p in IdleWatcher.ranges:
+                p[0].erase_regions(p[1])
+                
+            IdleWatcher.ranges = []
+                
     def onIdle(self, view):
         #print "No activity in the past 800ms"
         sublime.active_window().run_command("get_all_counts")
         sublime.active_window().run_command("show_last_error")
+        self.printLogs()
         sublime.set_timeout(functools.partial(self.onModified, view), 800)
 
     def on_modified(self, view):
