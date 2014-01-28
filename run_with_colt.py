@@ -242,7 +242,7 @@ class IdleWatcher(sublime_plugin.EventListener):
                             IdleWatcher.ranges.append([view, "error." + str(position)])
                         
                     
-                sublime.active_window().run_command("show_panel", {"panel": "console", "toggle": False})
+                #sublime.active_window().run_command("show_panel", {"panel": "console", "toggle": False})
         else :
             # clear all ranges
             for p in IdleWatcher.ranges:
