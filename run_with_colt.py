@@ -477,6 +477,8 @@ class StartColtCommand(AbstractColtRunCommand):
 
 
 class RunWithColtCommand(AbstractColtRunCommand):
+    
+        html = None
 
         def run(self, nodeJs):
                 settings = self.getSettings()
@@ -491,14 +493,14 @@ class RunWithColtCommand(AbstractColtRunCommand):
                     coltProjectFilePath = colt.exportProject(self.window, file)
                 else :
                     if re.match('.*\\.html?$', file): # r'' for v3
-                        OpenInColtCommand.html = file
+                        RunWithColtCommand.html = file
 
-                    if OpenInColtCommand.html is None :
+                    if RunWithColtCommand.html is None :
                         # Error message
                         sublime.error_message('This tab is not html file. Please open project main html and try again.')
                         return
 
-                    coltProjectFilePath = colt.exportProject(self.window, OpenInColtCommand.html)
+                    coltProjectFilePath = colt.exportProject(self.window, RunWithColtCommand.html)
 
                 # Add project to workset file
                 colt.addToWorkingSet(coltProjectFilePath)
