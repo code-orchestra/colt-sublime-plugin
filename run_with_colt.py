@@ -169,10 +169,14 @@ class GetAllCountsCommand(sublime_plugin.WindowCommand):
                                 GetAllCountsCommand.ranges.append([view, "counts." + str(position)])
 
 class ShowLastErrorCommand(sublime_plugin.WindowCommand):
+    errorMessage = ""
+    
     def run(self):
         # but 1st, clear every region this command could have created
         for view in self.window.views():
             view.erase_regions("error.colt")
+            
+        ShowLastErrorCommand.errorMessage = ""
                 
         if ColtConnection.activeSessions > 0:
             resultJSON = colt_rpc.getLastRuntimeError();
@@ -180,6 +184,8 @@ class ShowLastErrorCommand(sublime_plugin.WindowCommand):
             if resultJSON.has_key("error") or resultJSON["result"] is None :
                 # sublime.error_message("Can't read method counts")
                 return
+                
+            ShowLastErrorCommand.errorMessage = resultJSON["result"]["errorMessage"]
             
             for view in self.window.views():
                 if view.file_name() == resultJSON["result"]["filePath"]:
@@ -239,7 +245,7 @@ class IdleWatcher(sublime_plugin.EventListener):
                             position = info["position"]
                             view.add_regions("error." + str(position), [sublime.Region(position)],
                                 "scope", "../COLT/icons/error@2x", sublime.HIDDEN)
-                            IdleWatcher.ranges.append([view, "error." + str(position)])
+                            IdleWatcher.ranges.append([view, "error." + str(position), position, info["message"]])
                         
                     
                 #sublime.active_window().run_command("show_panel", {"panel": "console", "toggle": False})
@@ -262,6 +268,26 @@ class IdleWatcher(sublime_plugin.EventListener):
 
     def on_selection_modified(self, view):
         self.onModified(view)
+        
+        # check selection for errors
+        row = view.rowcol( view.sel()[0].begin() )[0]
+        
+        message = ""
+        regions = view.get_regions("error.colt")
+        if (len(regions) > 0) :
+            if (row == view.rowcol( regions[0].begin() )[0]) :
+                message = ShowLastErrorCommand.errorMessage
+                
+        for p in IdleWatcher.ranges:
+            if p[0].file_name() == view.file_name() :
+                if (row == view.rowcol( p[2] )[0]) :
+                    message = p[3]
+                    
+        # todo function signatures ??
+        
+        view.erase_status("colt_error")
+        if (message != "") :
+            view.set_status("colt_error", message)
     
     def on_activated(self, view):
         self.onModified(view)
