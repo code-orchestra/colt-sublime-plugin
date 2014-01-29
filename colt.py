@@ -123,6 +123,24 @@ def exportProject(window, mainDocumentPath):
         
         rootElement.set("projectName", mainDocumentName)
         rootElement.find("build").find("main-document").text = mainDocumentPath
+        
+        if mainDocumentPath.endswith("js") :
+            
+            # assume node.js - change the launcher accordingly
+            launch = rootElement.find("live").find("launch")
+            launch.find("launcher").text = "NODE_JS"
+            
+            nodePath = launch.find("nodejs-path")
+            if nodePath is None :
+                createElement("nodejs-path", "", launch)
+            
+            # set default node path unless user already have non-empty path
+            if nodePath.text == "" :
+                if sublime.platform() == "windows" :
+                    nodePath.text = "C:\\Program Files\\nodejs\\node.exe"
+                else :
+                    nodePath.text = "/usr/local/bin/node"
+
 
         coltProjectFile = open(coltProjectFilePath, "w")
         coltProjectFile.write(tostring(rootElement))
