@@ -133,6 +133,7 @@ def exportProject(window, mainDocumentPath):
             nodePath = launch.find("nodejs-path")
             if nodePath is None :
                 createElement("nodejs-path", "", launch)
+                nodePath = launch.find("nodejs-path")
             
             # set default node path unless user already have non-empty path
             if nodePath.text == "" :
