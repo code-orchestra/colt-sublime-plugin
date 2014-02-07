@@ -70,7 +70,7 @@ class ColtCompletitions(sublime_plugin.EventListener):
                         if view.substr(wordStart - 1) == "." :
                                 position = wordStart - 1
                         else :
-                                if re.match ("\s+", view.substr(word)) != None :
+                                if re.match ("\s*", view.substr(word)) != None :
                                     requestVars = True
                                 else :
                                     return []
