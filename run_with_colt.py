@@ -109,8 +109,8 @@ class ColtCompletitions(sublime_plugin.EventListener):
                 return completitions
 
 class AbstractColtRunCommand(sublime_plugin.WindowCommand):
-        def run(self):
-                return
+        #def run(self):
+        #        return
 
         def getSettings(self):
                 settings = sublime.load_settings(ColtPreferences.NAME)
@@ -134,7 +134,7 @@ class AbstractColtRunCommand(sublime_plugin.WindowCommand):
                         settings = sublime.load_settings(ColtPreferences.NAME)
                         settings.set("coltPath", inputPath)
                         sublime.save_settings(ColtPreferences.NAME)
-                        self.run()
+        #                self.run()
                 else :
                         sublime.error_message("COLT path specified is invalid")   
 
