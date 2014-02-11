@@ -109,8 +109,10 @@ class ColtCompletitions(sublime_plugin.EventListener):
                 return completitions
 
 class AbstractColtRunCommand(sublime_plugin.WindowCommand):
-        #def run(self):
-        #        return
+        runArg = None
+        def run(self, arg):
+                self.runArg = arg
+                return
 
         def getSettings(self):
                 settings = sublime.load_settings(ColtPreferences.NAME)
@@ -127,6 +129,7 @@ class AbstractColtRunCommand(sublime_plugin.WindowCommand):
                         self.window.show_input_panel("COLT Path:", "", self.onCOLTPathInput, None, None)
                         return
 
+                # if not here, any colt.runCOLT() call will fail, however plugin can still connect to running COLT
                 return sublime.load_settings(ColtPreferences.NAME)    
 
         def onCOLTPathInput(self, inputPath):
@@ -134,7 +137,7 @@ class AbstractColtRunCommand(sublime_plugin.WindowCommand):
                         settings = sublime.load_settings(ColtPreferences.NAME)
                         settings.set("coltPath", inputPath)
                         sublime.save_settings(ColtPreferences.NAME)
-        #                self.run()
+                        self.run(self.runArg)
                 else :
                         sublime.error_message("COLT path specified is invalid")   
 
@@ -480,7 +483,7 @@ class ColtClearLogCommand(sublime_plugin.WindowCommand):
 
 class StartColtCommand(AbstractColtRunCommand):
 
-        def run(self):
+        def run(self, ignore = None):
                 settings = self.getSettings()                
                 
                 # TODO: detect if colt is running and skip running it if it is
