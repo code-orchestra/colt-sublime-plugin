@@ -172,6 +172,14 @@ class GetAllCountsCommand(sublime_plugin.WindowCommand):
                     filePath = info["filePath"]
                                         
                     count = info["count"]
+                    
+                    # do not show count if there is an error in this line
+                    row = view.rowcol( position )[0]
+                    for p in IdleWatcher.ranges:
+                        if p[0].file_name() == view.file_name() :
+                            if (row == view.rowcol( p[2] )[0]) :
+                                count = 0
+                    
                     if count > 0:
                         if count > 9:
                             count = "infinity"
@@ -198,6 +206,10 @@ class ColtShowLastErrorsCommand(sublime_plugin.WindowCommand):
             return
         p = IdleWatcher.ranges[picked]
         self.window.run_command("open_file", { "file": p[0].file_name() })
+        
+    def is_enabled(self):
+        return colt_rpc.isConnected() and colt_rpc.hasActiveSessions()
+
 
 # ST2 version of http://www.sublimetext.com/docs/plugin-examples Idle Watcher
 class IdleWatcher(sublime_plugin.EventListener):
@@ -282,8 +294,8 @@ class IdleWatcher(sublime_plugin.EventListener):
                 
     def onIdle(self, view):
         #print "No activity in the past 800ms"
-        sublime.active_window().run_command("get_all_counts")
         self.printLogs()
+        sublime.active_window().run_command("get_all_counts")
         sublime.set_timeout(functools.partial(self.onModified, view), 800)
 
     def on_modified(self, view):
@@ -296,11 +308,6 @@ class IdleWatcher(sublime_plugin.EventListener):
         row = view.rowcol( view.sel()[0].begin() )[0]
         
         message = ""
-        regions = view.get_regions("error.colt")
-        if (len(regions) > 0) :
-            if (row == view.rowcol( regions[0].begin() )[0]) :
-                message = ShowLastErrorCommand.errorMessage
-                
         for p in IdleWatcher.ranges:
             if p[0].file_name() == view.file_name() :
                 if (row == view.rowcol( p[2] )[0]) :
