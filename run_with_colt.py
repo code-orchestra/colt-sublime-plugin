@@ -172,47 +172,53 @@ class GetAllCountsCommand(sublime_plugin.WindowCommand):
                     filePath = info["filePath"]
                                         
                     count = info["count"]
+                    
                     if count > 0:
                         if count > 9:
                             count = "infinity"
                     
                         for view in self.window.views():
                             if view.file_name() == filePath:
-                                view.add_regions("counts." + str(position), [sublime.Region(position)],
-                                    "scope", "../COLT/icons/" + str(count) + "@2x", sublime.HIDDEN)
-                                GetAllCountsCommand.ranges.append([view, "counts." + str(position)])
-
-class ShowLastErrorCommand(sublime_plugin.WindowCommand):
-    errorMessage = ""
-    
-    def run(self):
-        # but 1st, clear every region this command could have created
-        for view in self.window.views():
-            view.erase_regions("error.colt")
-            
-        ShowLastErrorCommand.errorMessage = ""
-                
-        if ColtConnection.activeSessions > 0:
-            resultJSON = colt_rpc.getLastRuntimeError();
-                
-            if resultJSON.has_key("error") or resultJSON["result"] is None :
-                # sublime.error_message("Can't read method counts")
-                return
-                
-            ShowLastErrorCommand.errorMessage = resultJSON["result"]["errorMessage"]
-            
-            for view in self.window.views():
-                if view.file_name() == resultJSON["result"]["filePath"]:
-                    position = resultJSON["result"]["position"]
-                    view.erase_regions("counts." + str(position))
-                    view.add_regions("error.colt", [sublime.Region(position)],
-                        "scope", "../COLT/icons/error@2x", sublime.HIDDEN)
+                                
+                                # do not show count if there is an error in this line
+                                noError = True
+                                row = view.rowcol( position )[0]
+                                for p in IdleWatcher.ranges:
+                                    if p[4] == view.file_name() :
+                                        if (row == view.rowcol( p[2] )[0]) :
+                                            noError = False
+                                
+                                if noError :
+                                    view.add_regions("counts." + str(position), [sublime.Region(position)],
+                                        "scope", "../COLT/icons/" + str(count) + "@2x", sublime.HIDDEN)
+                                    GetAllCountsCommand.ranges.append([view, "counts." + str(position)])
                     
+
+class ColtShowLastErrorsCommand(sublime_plugin.WindowCommand):
+
+    def run(self):
+        items = []
+        for p in IdleWatcher.ranges:
+            items.append([p[3], "\tat " + p[4]])
+        self.window.show_quick_panel(items, self.on_done)
+
+    def on_done(self, picked):
+        if picked == -1:
+            return
+        if picked >= len(IdleWatcher.ranges):
+            return
+        p = IdleWatcher.ranges[picked]
+        self.window.run_command("open_file", { "file": p[4] })
+        
+    def is_enabled(self):
+        return colt_rpc.isConnected() and colt_rpc.hasActiveSessions()
+
 
 # ST2 version of http://www.sublimetext.com/docs/plugin-examples Idle Watcher
 class IdleWatcher(sublime_plugin.EventListener):
     pending = 0
     ranges = []
+    runtimeError = { "message" : "" }
     
     def handleTimeout(self, view):
         self.pending = self.pending - 1
@@ -231,6 +237,17 @@ class IdleWatcher(sublime_plugin.EventListener):
             resultJSON = colt_rpc.getLastLogMessages()
             if resultJSON.has_key("error") or resultJSON["result"] is None :
                 return
+                
+            resultJSON2 = colt_rpc.getLastRuntimeError();
+            if not (resultJSON2.has_key("error") or resultJSON2["result"] is None) :
+                if IdleWatcher.runtimeError["message"] != resultJSON2["result"]["errorMessage"] :
+                    # new runtime error - add to errors list
+                    IdleWatcher.runtimeError = {
+                        "position" : resultJSON2["result"]["position"],
+                        "filePath" : resultJSON2["result"]["filePath"],
+                        "message" : resultJSON2["result"]["errorMessage"] }
+                    resultJSON["result"].append(IdleWatcher.runtimeError)
+
             if len(resultJSON["result"]) > 0 :
                 
                 openConsole = False
@@ -242,8 +259,9 @@ class IdleWatcher(sublime_plugin.EventListener):
                         if (len (info["message"]) == 0) :
                             # empty syntax error message signals that corresponding page was reloaded
                             for p in IdleWatcher.ranges:
-                                if p[0].file_name() == info["filePath"]:
-                                    p[0].erase_regions(p[1])
+                                if p[4] == info["filePath"]:
+                                    if  p[0] != None :
+                                        p[0].erase_regions(p[1])
                                     IdleWatcher.ranges.remove(p)
                         else :
                             # add to the list and print
@@ -262,27 +280,39 @@ class IdleWatcher(sublime_plugin.EventListener):
                     
                 # now show syntax errors
                 for info in syntaxErrors :
+                    viewFound = None
                     for view in sublime.active_window().views():
                         if view.file_name() == info["filePath"]:
                             position = info["position"]
                             view.add_regions("error." + str(position), [sublime.Region(position)],
                                 "scope", "../COLT/icons/error@2x", sublime.HIDDEN)
-                            IdleWatcher.ranges.append([view, "error." + str(position), position, info["message"]])
+                            viewFound = view
+                    IdleWatcher.ranges.append([viewFound, "error." + str(info["position"]), info["position"], info["message"], info["filePath"]])
                         
                 if openConsole :
                     sublime.active_window().run_command("show_panel", {"panel": "console", "toggle": False})
+            
+            # also show errors in views opened later
+            for p in IdleWatcher.ranges:
+                if p[0] == None :
+                    for view in sublime.active_window().views():
+                        if view.file_name() == p[4]:
+                            view.add_regions(p[1], [sublime.Region(p[2])],
+                                "scope", "../COLT/icons/error@2x", sublime.HIDDEN)
+                            p[0] = view
+                
         else :
             # clear all ranges
             for p in IdleWatcher.ranges:
-                p[0].erase_regions(p[1])
+                if  p[0] != None :
+                    p[0].erase_regions(p[1])
                 
             IdleWatcher.ranges = []
                 
     def onIdle(self, view):
         #print "No activity in the past 800ms"
-        sublime.active_window().run_command("get_all_counts")
-        sublime.active_window().run_command("show_last_error")
         self.printLogs()
+        sublime.active_window().run_command("get_all_counts")
         sublime.set_timeout(functools.partial(self.onModified, view), 800)
 
     def on_modified(self, view):
@@ -295,13 +325,8 @@ class IdleWatcher(sublime_plugin.EventListener):
         row = view.rowcol( view.sel()[0].begin() )[0]
         
         message = ""
-        regions = view.get_regions("error.colt")
-        if (len(regions) > 0) :
-            if (row == view.rowcol( regions[0].begin() )[0]) :
-                message = ShowLastErrorCommand.errorMessage
-                
         for p in IdleWatcher.ranges:
-            if p[0].file_name() == view.file_name() :
+            if p[4] == view.file_name() :
                 if (row == view.rowcol( p[2] )[0]) :
                     message = p[3]
                     
