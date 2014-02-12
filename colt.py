@@ -148,6 +148,23 @@ def exportProject(window, mainDocumentPath):
                 else :
                     nodePath.text = "/usr/local/bin/node"
 
+        else :
+            
+            settings = sublime.load_settings(ColtPreferences.NAME)
+            browserPathSetting = settings.get("coltBrowserPath", None)
+            if browserPathSetting != None :
+                
+                # set custom html launcher
+                launch = rootElement.find("live").find("launch")
+                launch.find("launcher").text = "CUSTOM"
+                
+                browserPath = launch.find("browser-path")
+                if browserPath is None :
+                    createElement("browser-path", "", launch)
+                    browserPath = launch.find("browser-path")
+                
+                browserPath.text = browserPathSetting
+
 
         coltProjectFile = open(coltProjectFilePath, "w")
         coltProjectFile.write(tostring(rootElement))
