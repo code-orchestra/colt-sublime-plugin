@@ -4,6 +4,11 @@ import sublime
 
 from xml.etree.ElementTree import Element, SubElement, tostring, parse
 
+from xml.etree import ElementTree # part of python distribution
+from elementtree import SimpleXMLTreeBuilder # part of your codebase
+if (sublime.platform() != "osx") and (sublime.platform() != "windows") :
+        ElementTree.XMLTreeBuilder = SimpleXMLTreeBuilder.TreeBuilder
+
 class ColtPreferences(object):
         NAME = "Preferences.sublime-settings"
 
@@ -71,7 +76,8 @@ def runCOLT(settings):
         elif platform == "windows" :
                 subprocess.Popen([coltPath + "\\colt.exe"]) 
         else :
-                sublime.error_message("Unsupported platform: " + platform)
+                # sublime.error_message("Unsupported platform: " + platform)
+                subprocess.Popen([coltPath]) 
 
 def exportProject(window, mainDocumentPath):
         mainDocumentName = os.path.splitext(os.path.basename(mainDocumentPath))[0]

@@ -150,7 +150,14 @@ def getLastRuntimeError():
 def startLive():
     securityToken = getSecurityToken()
     if not getSecurityToken() is None :                        
-        runRPC(ColtConnection.port, "startLive", [ securityToken ])
+        try :
+            error = runRPC(ColtConnection.port, "startLive", [ securityToken ])["error"]["data"]["exceptionTypeName"]
+            if error == "codeOrchestra.colt.core.rpc.security.InvalidAuthTokenException" :
+                # auth code expired - we need new one
+                makeNewSecurityToken(True, sublime.active_window())
+        except KeyError :
+            # there was no error - good :)
+            return
 
 def getState():
     return runRPC(ColtConnection.port, "getState", None)

@@ -59,20 +59,31 @@ class ColtCompletitions(sublime_plugin.EventListener):
                         return []
 
                 position = getPositionEnd(view)
+                
+                requestVars = False
 
                 if view.substr(position - 1) == "." :
                         position = position - 1
                 else :
-                        wordStart = view.word(getPosition(view)).begin()
+                        word = view.word(getPosition(view))
+                        wordStart = word.begin()
                         if view.substr(wordStart - 1) == "." :
                                 position = wordStart - 1
                         else :
-                                return []
+                                if re.match ("\s*", view.substr(word)) != None :
+                                    requestVars = True
+                                else :
+                                    return []
 
                 if not colt_rpc.isConnected() or not colt_rpc.hasActiveSessions() :
                         return []
 
-                response = colt_rpc.getContextForPosition(view.file_name(), position, getContent(view), "PROPERTIES")
+                response = None
+                if requestVars == True :
+                    response = colt_rpc.evaluateExpression(view.file_name(), "?", position, getContent(view))
+                else :
+                    response = colt_rpc.getContextForPosition(view.file_name(), position, getContent(view), "PROPERTIES")
+                
                 if response.has_key("error") :
                         return []
 
@@ -98,7 +109,9 @@ class ColtCompletitions(sublime_plugin.EventListener):
                 return completitions
 
 class AbstractColtRunCommand(sublime_plugin.WindowCommand):
-        def run(self):
+        runArg = None
+        def run(self, nodeJs = None):
+                self.runArg = nodeJs
                 return
 
         def getSettings(self):
@@ -116,6 +129,7 @@ class AbstractColtRunCommand(sublime_plugin.WindowCommand):
                         self.window.show_input_panel("COLT Path:", "", self.onCOLTPathInput, None, None)
                         return
 
+                # if not here, any colt.runCOLT() call will fail, however plugin can still connect to running COLT
                 return sublime.load_settings(ColtPreferences.NAME)    
 
         def onCOLTPathInput(self, inputPath):
@@ -123,7 +137,7 @@ class AbstractColtRunCommand(sublime_plugin.WindowCommand):
                         settings = sublime.load_settings(ColtPreferences.NAME)
                         settings.set("coltPath", inputPath)
                         sublime.save_settings(ColtPreferences.NAME)
-                        self.run()
+                        self.run(self.runArg)
                 else :
                         sublime.error_message("COLT path specified is invalid")   
 
@@ -221,6 +235,7 @@ class IdleWatcher(sublime_plugin.EventListener):
 
             if len(resultJSON["result"]) > 0 :
                 
+                openConsole = False
                 syntaxErrors = []
                 
                 for info in resultJSON["result"] :
@@ -239,6 +254,13 @@ class IdleWatcher(sublime_plugin.EventListener):
                     else :
                         # just print it
                         print("[COLT] " + info["message"])
+                        try :
+                            if info["source"] == "License" :
+                                openConsole = True
+                        except KeyError :
+                            # old colt
+                            if re.match("^Maximum updates.*", info["message"]) :
+                                openConsole = True
                     
                 # now show syntax errors
                 for info in syntaxErrors :
@@ -249,8 +271,8 @@ class IdleWatcher(sublime_plugin.EventListener):
                                 "scope", "../COLT/icons/error@2x", sublime.HIDDEN)
                             IdleWatcher.ranges.append([view, "error." + str(position), position, info["message"]])
                         
-                    
-                #sublime.active_window().run_command("show_panel", {"panel": "console", "toggle": False})
+                if openConsole :
+                    sublime.active_window().run_command("show_panel", {"panel": "console", "toggle": False})
         else :
             # clear all ranges
             for p in IdleWatcher.ranges:
@@ -470,18 +492,21 @@ class ColtClearLogCommand(sublime_plugin.WindowCommand):
 
 class StartColtCommand(AbstractColtRunCommand):
 
-        def run(self):
+        def run(self, nodeJs = None):
                 settings = self.getSettings()                
                 
                 # TODO: detect if colt is running and skip running it if it is
                 colt.runCOLT(settings)
+
+        def is_enabled(self):
+                return True
 
 
 class RunWithColtCommand(AbstractColtRunCommand):
     
         html = None
 
-        def run(self, nodeJs):
+        def run(self, nodeJs = None):
                 settings = self.getSettings()
                 
                 # Check the file name
