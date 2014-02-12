@@ -110,8 +110,8 @@ class ColtCompletitions(sublime_plugin.EventListener):
 
 class AbstractColtRunCommand(sublime_plugin.WindowCommand):
         runArg = None
-        def run(self, arg):
-                self.runArg = arg
+        def run(self, nodeJs = None):
+                self.runArg = nodeJs
                 return
 
         def getSettings(self):
@@ -491,7 +491,7 @@ class ColtClearLogCommand(sublime_plugin.WindowCommand):
 
 class StartColtCommand(AbstractColtRunCommand):
 
-        def run(self, ignore = None):
+        def run(self, nodeJs = None):
                 settings = self.getSettings()                
                 
                 # TODO: detect if colt is running and skip running it if it is
@@ -505,7 +505,7 @@ class RunWithColtCommand(AbstractColtRunCommand):
     
         html = None
 
-        def run(self, nodeJs):
+        def run(self, nodeJs = None):
                 settings = self.getSettings()
                 
                 # Check the file name
