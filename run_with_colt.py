@@ -173,22 +173,25 @@ class GetAllCountsCommand(sublime_plugin.WindowCommand):
                                         
                     count = info["count"]
                     
-                    # do not show count if there is an error in this line
-                    row = view.rowcol( position )[0]
-                    for p in IdleWatcher.ranges:
-                        if p[0].file_name() == view.file_name() :
-                            if (row == view.rowcol( p[2] )[0]) :
-                                count = 0
-                    
                     if count > 0:
                         if count > 9:
                             count = "infinity"
                     
                         for view in self.window.views():
                             if view.file_name() == filePath:
-                                view.add_regions("counts." + str(position), [sublime.Region(position)],
-                                    "scope", "../COLT/icons/" + str(count) + "@2x", sublime.HIDDEN)
-                                GetAllCountsCommand.ranges.append([view, "counts." + str(position)])
+                                
+                                # do not show count if there is an error in this line
+                                noError = True
+                                row = view.rowcol( position )[0]
+                                for p in IdleWatcher.ranges:
+                                    if p[4] == view.file_name() :
+                                        if (row == view.rowcol( p[2] )[0]) :
+                                            noError = False
+                                
+                                if noError :
+                                    view.add_regions("counts." + str(position), [sublime.Region(position)],
+                                        "scope", "../COLT/icons/" + str(count) + "@2x", sublime.HIDDEN)
+                                    GetAllCountsCommand.ranges.append([view, "counts." + str(position)])
                     
 
 class ColtShowLastErrorsCommand(sublime_plugin.WindowCommand):
@@ -196,7 +199,7 @@ class ColtShowLastErrorsCommand(sublime_plugin.WindowCommand):
     def run(self):
         items = []
         for p in IdleWatcher.ranges:
-            items.append([p[3], "\tat " + p[0].file_name()])
+            items.append([p[3], "\tat " + p[4]])
         self.window.show_quick_panel(items, self.on_done)
 
     def on_done(self, picked):
@@ -205,7 +208,7 @@ class ColtShowLastErrorsCommand(sublime_plugin.WindowCommand):
         if picked >= len(IdleWatcher.ranges):
             return
         p = IdleWatcher.ranges[picked]
-        self.window.run_command("open_file", { "file": p[0].file_name() })
+        self.window.run_command("open_file", { "file": p[4] })
         
     def is_enabled(self):
         return colt_rpc.isConnected() and colt_rpc.hasActiveSessions()
@@ -256,8 +259,9 @@ class IdleWatcher(sublime_plugin.EventListener):
                         if (len (info["message"]) == 0) :
                             # empty syntax error message signals that corresponding page was reloaded
                             for p in IdleWatcher.ranges:
-                                if p[0].file_name() == info["filePath"]:
-                                    p[0].erase_regions(p[1])
+                                if p[4] == info["filePath"]:
+                                    if  p[0] != None :
+                                        p[0].erase_regions(p[1])
                                     IdleWatcher.ranges.remove(p)
                         else :
                             # add to the list and print
@@ -276,19 +280,32 @@ class IdleWatcher(sublime_plugin.EventListener):
                     
                 # now show syntax errors
                 for info in syntaxErrors :
+                    viewFound = None
                     for view in sublime.active_window().views():
                         if view.file_name() == info["filePath"]:
                             position = info["position"]
                             view.add_regions("error." + str(position), [sublime.Region(position)],
                                 "scope", "../COLT/icons/error@2x", sublime.HIDDEN)
-                            IdleWatcher.ranges.append([view, "error." + str(position), position, info["message"]])
+                            viewFound = view
+                    IdleWatcher.ranges.append([viewFound, "error." + str(info["position"]), info["position"], info["message"], info["filePath"]])
                         
                 if openConsole :
                     sublime.active_window().run_command("show_panel", {"panel": "console", "toggle": False})
+            
+            # also show errors in views opened later
+            for p in IdleWatcher.ranges:
+                if p[0] == None :
+                    for view in sublime.active_window().views():
+                        if view.file_name() == p[4]:
+                            view.add_regions(p[1], [sublime.Region(p[2])],
+                                "scope", "../COLT/icons/error@2x", sublime.HIDDEN)
+                            p[0] = view
+                
         else :
             # clear all ranges
             for p in IdleWatcher.ranges:
-                p[0].erase_regions(p[1])
+                if  p[0] != None :
+                    p[0].erase_regions(p[1])
                 
             IdleWatcher.ranges = []
                 
@@ -309,7 +326,7 @@ class IdleWatcher(sublime_plugin.EventListener):
         
         message = ""
         for p in IdleWatcher.ranges:
-            if p[0].file_name() == view.file_name() :
+            if p[4] == view.file_name() :
                 if (row == view.rowcol( p[2] )[0]) :
                     message = p[3]
                     
