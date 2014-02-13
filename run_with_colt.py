@@ -355,19 +355,10 @@ class ColtGoToDeclarationCommand(sublime_plugin.WindowCommand):
                         # sublime.error_message("Can't find a declaration")
                         return
 
-                position = resultJSON["result"]["position"]
+                row = resultJSON["result"]["optionalRow"]
                 filePath = resultJSON["result"]["filePath"]
 
-                targetView = self.window.open_file(filePath)
-                targetView.sel().clear()
-                targetView.sel().add(sublime.Region(position))
-                
-                targetView.show_at_center(position)
-                
-                # work around sublime bug with caret position not refreshing
-                bug = [s for s in targetView.sel()]
-                targetView.add_regions("bug", bug, "bug", "dot", sublime.HIDDEN | sublime.PERSISTENT)
-                targetView.erase_regions("bug")
+                targetView = self.window.open_file(filePath + ":" + str(row), sublime.ENCODED_POSITION)
 
         def is_enabled(self):
                 view = self.window.active_view()
