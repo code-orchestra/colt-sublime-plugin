@@ -208,7 +208,7 @@ class ColtShowLastErrorsCommand(sublime_plugin.WindowCommand):
         if picked >= len(IdleWatcher.ranges):
             return
         p = IdleWatcher.ranges[picked]
-        self.window.run_command("open_file", { "file": p[4] })
+        self.window.open_file( p[4] + ":" + str(p[5]), sublime.ENCODED_POSITION )
         
     def is_enabled(self):
         return colt_rpc.isConnected() and colt_rpc.hasActiveSessions()
@@ -244,6 +244,7 @@ class IdleWatcher(sublime_plugin.EventListener):
                     # new runtime error - add to errors list
                     IdleWatcher.runtimeError = {
                         "position" : resultJSON2["result"]["position"],
+                        "row" : resultJSON2["result"]["row"],
                         "filePath" : resultJSON2["result"]["filePath"],
                         "message" : resultJSON2["result"]["errorMessage"] }
                     resultJSON["result"].append(IdleWatcher.runtimeError)
@@ -287,7 +288,7 @@ class IdleWatcher(sublime_plugin.EventListener):
                             view.add_regions("error." + str(position), [sublime.Region(position)],
                                 "scope", "../COLT/icons/error@2x", sublime.HIDDEN)
                             viewFound = view
-                    IdleWatcher.ranges.append([viewFound, "error." + str(info["position"]), info["position"], info["message"], info["filePath"]])
+                    IdleWatcher.ranges.append([viewFound, "error." + str(info["position"]), info["position"], info["message"], info["filePath"], info["row"]])
                         
                 if openConsole :
                     sublime.active_window().run_command("show_panel", {"panel": "console", "toggle": False})
