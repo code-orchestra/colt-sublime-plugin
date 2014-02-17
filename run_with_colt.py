@@ -220,6 +220,14 @@ class IdleWatcher(sublime_plugin.EventListener):
     ranges = []
     runtimeError = { "message" : "" }
     
+    @staticmethod
+    def clearErrors():
+        for p in IdleWatcher.ranges:
+            if  p[0] != None :
+                p[0].erase_regions(p[1])
+
+        IdleWatcher.ranges = []        
+    
     def handleTimeout(self, view):
         self.pending = self.pending - 1
         if self.pending == 0:
@@ -304,11 +312,7 @@ class IdleWatcher(sublime_plugin.EventListener):
                 
         else :
             # clear all ranges
-            for p in IdleWatcher.ranges:
-                if  p[0] != None :
-                    p[0].erase_regions(p[1])
-                
-            IdleWatcher.ranges = []
+            IdleWatcher.clearErrors()
                 
     def onIdle(self, view):
         #print "No activity in the past 800ms"
@@ -488,6 +492,7 @@ class ColtViewValueCommand(sublime_plugin.WindowCommand):
         
 class ColtReloadCommand(sublime_plugin.WindowCommand):
         def run(self):
+                IdleWatcher.clearErrors()
                 colt_rpc.reload()
 
         def is_enabled(self):
