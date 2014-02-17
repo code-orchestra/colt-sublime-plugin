@@ -295,7 +295,7 @@ class IdleWatcher(sublime_plugin.EventListener):
             
             # also show errors in views opened later
             for p in IdleWatcher.ranges:
-                if p[0] == None :
+                if (p[0] == None) or (p[0].window() == None) :
                     for view in sublime.active_window().views():
                         if view.file_name() == p[4]:
                             view.add_regions(p[1], [sublime.Region(p[2])],
