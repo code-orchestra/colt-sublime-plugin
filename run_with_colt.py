@@ -345,6 +345,23 @@ class IdleWatcher(sublime_plugin.EventListener):
         self.onModified(view)
 
                 
+class ColtReloadScriptCommand(sublime_plugin.WindowCommand):
+
+        def run(self):
+                view = self.window.active_view()
+
+                fileName = view.file_name()
+                position = getWordPosition(view)
+                content = getContent(view)
+
+                resultJSON = colt_rpc.reloadScriptAt(fileName, position, content)
+
+        def is_enabled(self):
+                view = self.window.active_view()
+                if view is None :
+                        return False
+                return colt.isColtFile(view) and colt_rpc.isConnected() and colt_rpc.hasActiveSessions()
+
 class ColtGoToDeclarationCommand(sublime_plugin.WindowCommand):
 
         def run(self):

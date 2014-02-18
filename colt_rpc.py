@@ -169,6 +169,9 @@ def getActiveSessionsCount():
     except Exception :
         return 0
 
+def reloadScriptAt(filePath, position, currentContent):
+    return runRPC(ColtConnection.port, "reloadScriptAt", [ getSecurityToken(), filePath, position, currentContent ])
+
 def getDeclarationPosition(filePath, position, currentContent):
     return runRPC(ColtConnection.port, "getDeclarationPosition", [ getSecurityToken(), filePath, position, currentContent ])
 
