@@ -208,7 +208,7 @@ class ColtShowLastErrorsCommand(sublime_plugin.WindowCommand):
         if picked >= len(IdleWatcher.ranges):
             return
         p = IdleWatcher.ranges[picked]
-        self.window.run_command("open_file", { "file": p[4] })
+        self.window.open_file( p[4] + ":" + str(p[5]), sublime.ENCODED_POSITION )
         
     def is_enabled(self):
         return colt_rpc.isConnected() and colt_rpc.hasActiveSessions()
@@ -219,6 +219,14 @@ class IdleWatcher(sublime_plugin.EventListener):
     pending = 0
     ranges = []
     runtimeError = { "message" : "" }
+    
+    @staticmethod
+    def clearErrors():
+        for p in IdleWatcher.ranges:
+            if  p[0] != None :
+                p[0].erase_regions(p[1])
+
+        IdleWatcher.ranges = []        
     
     def handleTimeout(self, view):
         self.pending = self.pending - 1
@@ -244,6 +252,7 @@ class IdleWatcher(sublime_plugin.EventListener):
                     # new runtime error - add to errors list
                     IdleWatcher.runtimeError = {
                         "position" : resultJSON2["result"]["position"],
+                        "row" : resultJSON2["result"]["row"],
                         "filePath" : resultJSON2["result"]["filePath"],
                         "message" : resultJSON2["result"]["errorMessage"] }
                     resultJSON["result"].append(IdleWatcher.runtimeError)
@@ -287,14 +296,14 @@ class IdleWatcher(sublime_plugin.EventListener):
                             view.add_regions("error." + str(position), [sublime.Region(position)],
                                 "scope", "../COLT/icons/error@2x", sublime.HIDDEN)
                             viewFound = view
-                    IdleWatcher.ranges.append([viewFound, "error." + str(info["position"]), info["position"], info["message"], info["filePath"]])
+                    IdleWatcher.ranges.append([viewFound, "error." + str(info["position"]), info["position"], info["message"], info["filePath"], info["row"]])
                         
                 if openConsole :
                     sublime.active_window().run_command("show_panel", {"panel": "console", "toggle": False})
             
             # also show errors in views opened later
             for p in IdleWatcher.ranges:
-                if p[0] == None :
+                if (p[0] == None) or (p[0].window() == None) :
                     for view in sublime.active_window().views():
                         if view.file_name() == p[4]:
                             view.add_regions(p[1], [sublime.Region(p[2])],
@@ -303,11 +312,7 @@ class IdleWatcher(sublime_plugin.EventListener):
                 
         else :
             # clear all ranges
-            for p in IdleWatcher.ranges:
-                if  p[0] != None :
-                    p[0].erase_regions(p[1])
-                
-            IdleWatcher.ranges = []
+            IdleWatcher.clearErrors()
                 
     def onIdle(self, view):
         #print "No activity in the past 800ms"
@@ -340,6 +345,23 @@ class IdleWatcher(sublime_plugin.EventListener):
         self.onModified(view)
 
                 
+class ColtReloadScriptCommand(sublime_plugin.WindowCommand):
+
+        def run(self):
+                view = self.window.active_view()
+
+                fileName = view.file_name()
+                position = getWordPosition(view)
+                content = getContent(view)
+
+                resultJSON = colt_rpc.reloadScriptAt(fileName, position, content)
+
+        def is_enabled(self):
+                view = self.window.active_view()
+                if view is None :
+                        return False
+                return colt.isColtFile(view) and colt_rpc.isConnected() and colt_rpc.hasActiveSessions()
+
 class ColtGoToDeclarationCommand(sublime_plugin.WindowCommand):
 
         def run(self):
@@ -355,19 +377,10 @@ class ColtGoToDeclarationCommand(sublime_plugin.WindowCommand):
                         # sublime.error_message("Can't find a declaration")
                         return
 
-                position = resultJSON["result"]["position"]
+                row = resultJSON["result"]["optionalRow"]
                 filePath = resultJSON["result"]["filePath"]
 
-                targetView = self.window.open_file(filePath)
-                targetView.sel().clear()
-                targetView.sel().add(sublime.Region(position))
-                
-                targetView.show_at_center(position)
-                
-                # work around sublime bug with caret position not refreshing
-                bug = [s for s in targetView.sel()]
-                targetView.add_regions("bug", bug, "bug", "dot", sublime.HIDDEN | sublime.PERSISTENT)
-                targetView.erase_regions("bug")
+                targetView = self.window.open_file(filePath + ":" + str(row), sublime.ENCODED_POSITION)
 
         def is_enabled(self):
                 view = self.window.active_view()
@@ -496,6 +509,7 @@ class ColtViewValueCommand(sublime_plugin.WindowCommand):
         
 class ColtReloadCommand(sublime_plugin.WindowCommand):
         def run(self):
+                IdleWatcher.clearErrors()
                 colt_rpc.reload()
 
         def is_enabled(self):

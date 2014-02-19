@@ -4,6 +4,7 @@
 { "keys": ["ctrl+shift+f11"], "command": "run_with_colt", "args": { "nodeJs": "True" } },
 { "keys": ["ctrl+f10"], "command": "open_in_colt" },
 { "keys": ["ctrl+shift+r"], "command": "colt_reload" },
+{ "keys": ["ctrl+shift+alt+r"], "command": "colt_reload_script" },
 { "keys": ["ctrl+alt+f10"], "command": "colt_clear_log" },
 { "keys": ["shift+f10"], "command": "colt_view_value" },
 { "keys": ["shift+f5"], "command": "colt_run_function" },
