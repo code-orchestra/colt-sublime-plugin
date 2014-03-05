@@ -104,6 +104,8 @@ class ColtCompletitions(sublime_plugin.EventListener):
                                         displayStr = replaceStr
                                         cursiveStr = resultStr
 
+                                displayStr = cursiveStr
+                                cursiveStr = ""
                                 completitions.append((displayStr + "\t" + cursiveStr + "[COLT]", replaceStr.replace('$', '\$')))
 
                 return completitions
