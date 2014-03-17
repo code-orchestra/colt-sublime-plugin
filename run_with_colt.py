@@ -583,12 +583,9 @@ class RunWithColtCommand(AbstractColtRunCommand):
                 # Add project to workset file
                 colt.addToWorkingSet(coltProjectFilePath)
 
-                if colt_rpc.locateCOLTServicePort(coltProjectFilePath) is None:
-                    colt_rpc.runAfterAuthorization = None
-                else:
-                    colt_rpc.runAfterAuthorization = colt_rpc.startLive
                 # Run COLT
                 colt_rpc.initAndConnect(settings, coltProjectFilePath)
 
                 # Authorize
+                colt_rpc.runAfterAuthorization = colt_rpc.startLive
                 colt_rpc.authorize(self.window)                                                          
