@@ -58,7 +58,7 @@ def runAfterAuthorization():
 def authorize(window):
     if getSecurityToken() is None :
         makeNewSecurityToken(True, window)
-    else :
+    elif not runAfterAuthorization is None:
         runAfterAuthorization()
 
 def getSecurityToken(): 
@@ -213,7 +213,7 @@ def initAndConnect(settings, projectPath):
         establishConnection(port)
         return port
 
-    colt.runCOLT(settings)
+    colt.runCOLT(settings, projectPath)
     
     timeout = 20
     while timeout > 0 :

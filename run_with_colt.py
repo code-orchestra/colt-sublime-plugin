@@ -537,7 +537,7 @@ class StartColtCommand(AbstractColtRunCommand):
                 settings = self.getSettings()                
                 
                 # TODO: detect if colt is running and skip running it if it is
-                colt.runCOLT(settings)
+                colt.runCOLT(settings, None)
 
         def is_enabled(self):
                 return True
@@ -583,9 +583,12 @@ class RunWithColtCommand(AbstractColtRunCommand):
                 # Add project to workset file
                 colt.addToWorkingSet(coltProjectFilePath)
 
+                if colt_rpc.locateCOLTServicePort(coltProjectFilePath) is None:
+                    colt_rpc.runAfterAuthorization = None
+                else:
+                    colt_rpc.runAfterAuthorization = colt_rpc.startLive
                 # Run COLT
                 colt_rpc.initAndConnect(settings, coltProjectFilePath)
 
-                # Authorize and start live
-                colt_rpc.runAfterAuthorization = colt_rpc.startLive
+                # Authorize
                 colt_rpc.authorize(self.window)                                                          
