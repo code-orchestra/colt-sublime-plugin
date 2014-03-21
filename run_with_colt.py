@@ -278,6 +278,7 @@ class IdleWatcher(sublime_plugin.EventListener):
                         else :
                             # add to the list and print
                             syntaxErrors.append(info)
+                            openConsole = True
                             print("[COLT] " + info["message"])
                     else :
                         # just print it
