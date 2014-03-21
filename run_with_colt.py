@@ -547,6 +547,14 @@ class StartColtCommand(AbstractColtRunCommand):
 class RunWithColtCommand(AbstractColtRunCommand):
     
         html = None
+        
+        def getBaseDir (self, file):
+            basedir = os.path.dirname(file)
+            folders = self.window.folders()
+            if len(folders) > 0:
+                basedir = folders[0]
+            return basedir
+
 
         def run(self, nodeJs = None):
                 settings = self.getSettings()
@@ -556,9 +564,16 @@ class RunWithColtCommand(AbstractColtRunCommand):
                 
                 coltProjectFilePath = ""
 
+                launcherType = "BROWSER"
+                if nodeJs == "NodeJs" :
+                    launcherType = "NODE_JS"
+                if nodeJs == "Webkit" :
+                    launcherType = "NODE_WEBKIT"
+
+
                 # Export COLT project
-                if nodeJs == "True" :
-                    coltProjectFilePath = colt.exportProject(self.window, file)
+                if nodeJs == "NodeJs" :
+                    coltProjectFilePath = colt.exportProject(self.window, file, self.getBaseDir(file), launcherType)
                 else :
                     if re.match('.*\\.html?$', file): # r'' for v3
                         RunWithColtCommand.html = file
@@ -576,10 +591,16 @@ class RunWithColtCommand(AbstractColtRunCommand):
                             # Error message
                             sublime.error_message('This tab is not html file. Please open project main html and try again.')
                             return
+                        else :
+                            # override launcher, if possible 
+                            coltProjectFilePath = colt.exportProject(self.window, "", self.getBaseDir(file), launcherType)
+                            if coltProjectFilePath is None:
+                                sublime.error_message('This tab is not html file. Please open project main html and try again.')
+                                return
 
                     else :
                         # Start using (possibly) different html file as main
-                        coltProjectFilePath = colt.exportProject(self.window, RunWithColtCommand.html)
+                        coltProjectFilePath = colt.exportProject(self.window, RunWithColtCommand.html, self.getBaseDir(RunWithColtCommand.html), launcherType)
 
                 # Add project to workset file
                 colt.addToWorkingSet(coltProjectFilePath)
