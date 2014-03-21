@@ -272,7 +272,6 @@ class IdleWatcher(sublime_plugin.EventListener):
                         # syntax error
                         if (len (info["message"]) == 0) :
                             # empty syntax error message signals that corresponding page was reloaded
-                            print("****** got empty syntax error - page reload")
                             itemsToRemove = []
                             for p in IdleWatcher.ranges:
                                 if p[4] == info["filePath"]:
@@ -281,7 +280,6 @@ class IdleWatcher(sublime_plugin.EventListener):
                                     itemsToRemove.append(p)
                             for p in itemsToRemove :
                                 IdleWatcher.ranges.remove(p)
-                                print("****** removing displayed syntax errors: " + str(p[2]) + " " + p[3])
                                 
                             itemsToRemove = []
                             for pendingError in syntaxErrors :
@@ -289,14 +287,12 @@ class IdleWatcher(sublime_plugin.EventListener):
                                     itemsToRemove.append(pendingError)
                             for p in itemsToRemove :
                                 syntaxErrors.remove(pendingError)
-                                print("****** removing pending syntax errors: " + str(pendingError["position"]) + " " + pendingError["message"])
                         else :
                             # add to the list and print
                             syntaxErrors.append(info)
                             if time.time() - IdleWatcher.sessionStartTime < 3.0 :
                                 # open console on syntax errors during 1st 3 seconds only
                                 openConsole = True
-                            print("****** got erro at " + str(info["position"]))
                             print("[COLT] " + info["message"])
                     else :
                         # just print it
