@@ -8,5 +8,6 @@
 { "keys": ["super+alt+f10"], "command": "colt_clear_log" },
 { "keys": ["shift+f10"], "command": "colt_view_value" },
 { "keys": ["shift+f5"], "command": "colt_run_function" },
+{ "keys": ["ctrl+q"], "command": "colt_show_javadoc" },
 { "keys": ["f3"], "command": "colt_go_to_declaration" }
 ]

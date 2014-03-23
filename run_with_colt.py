@@ -645,3 +645,24 @@ class RunWithColtCommand(AbstractColtRunCommand):
                 # Authorize
                 colt_rpc.runAfterAuthorization = colt_rpc.startLive
                 colt_rpc.authorize(self.window)                                                          
+
+        
+class ColtShowJavadocCommand(sublime_plugin.WindowCommand):
+        def run(self):
+                view = self.window.active_view()
+
+                fileName = view.file_name()
+                position = getWordPosition(view)
+                content = getContent(view)
+
+                resultJSON = colt_rpc.findAndShowJavaDocs(fileName, position, content)
+
+        def is_enabled(self):
+                view = self.window.active_view()
+                if view is None :
+                        return False
+                return colt_rpc.isConnected() and colt_rpc.hasActiveSessions()
+                
+class TestPluginCommand(sublime_plugin.TextCommand):
+    def run_(self, args):
+        print str(args) # {'del': True, 'event': {'y': 38.6015625, 'x': 200.23828125, 'button': 1L}}

@@ -190,6 +190,9 @@ def resetCallCounts():
 def getEnclosingTagId(filePath, position, currentContent):
     return runRPC(ColtConnection.port, "getEnclosingTagId", [ getSecurityToken(), filePath, position, currentContent ])
 
+def findAndShowJavaDocs(filePath, position, currentContent):
+    return runRPC(ColtConnection.port, "findAndShowJavaDocs", [ getSecurityToken(), filePath, position, currentContent ])
+
 def getLastLogMessages():
     return runRPC(ColtConnection.port, "getLastLogMessages", [ getSecurityToken() ])
 

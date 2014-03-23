@@ -9,5 +9,6 @@
 	{ "command": "colt_run_function", "caption": "Execute Function" },
 	{ "command": "colt_view_call_count", "caption": "View Function Call Count" },
 	{ "command": "colt_reset_call_counts", "caption": "Reset All Call Counts" },
+	{ "command": "colt_show_javadoc", "caption": "Show Javadoc" },
 	{ "command": "colt_go_to_declaration", "caption": "Go to Declaration" }
 ]
