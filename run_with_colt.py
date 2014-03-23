@@ -583,11 +583,29 @@ class RunWithColtCommand(AbstractColtRunCommand):
                     launcherType = "NODE_JS"
                 if nodeJs == "Webkit" :
                     launcherType = "NODE_WEBKIT"
+                    
+                # Override some settings using meta tags
+                overrides = {}
+                overrides["launcherType"] = launcherType
+                view = self.window.active_view()
+                viewContent = view.substr(sublime.Region(0, view.size() - 1))
+                metaTags = re.findall("<meta[^>]*>", viewContent, re.DOTALL)
+                for metaTag in metaTags :
+                    metaNameSearch = re.search("name=\"([^\"]+)", metaTag)
+                    if  metaNameSearch != None :
+                        metaName = metaNameSearch.group(1)
+                        
+                        metaContentSearch = re.search("content=\"([^\"]+)", metaTag)
+                        if  metaContentSearch != None :
+                            metaContent = metaContentSearch.group(1)
+                            
+                            print("Detected override: " + metaName + " -> " + metaContent)
+                            overrides[metaName] = metaContent
 
 
                 # Export COLT project
                 if nodeJs == "NodeJs" :
-                    coltProjectFilePath = colt.exportProject(self.window, file, self.getBaseDir(file), launcherType)
+                    coltProjectFilePath = colt.exportProject(self.window, file, self.getBaseDir(file), overrides)
                 else :
                     if re.match('.*\\.html?$', file): # r'' for v3
                         RunWithColtCommand.html = file
@@ -607,14 +625,14 @@ class RunWithColtCommand(AbstractColtRunCommand):
                             return
                         else :
                             # override launcher, if possible 
-                            coltProjectFilePath = colt.exportProject(self.window, "", self.getBaseDir(file), launcherType)
+                            coltProjectFilePath = colt.exportProject(self.window, "", self.getBaseDir(file), overrides)
                             if coltProjectFilePath is None:
                                 sublime.error_message('This tab is not html file. Please open project main html and try again.')
                                 return
 
                     else :
                         # Start using (possibly) different html file as main
-                        coltProjectFilePath = colt.exportProject(self.window, RunWithColtCommand.html, self.getBaseDir(RunWithColtCommand.html), launcherType)
+                        coltProjectFilePath = colt.exportProject(self.window, RunWithColtCommand.html, self.getBaseDir(RunWithColtCommand.html), overrides)
 
                 # Add project to workset file
                 colt.addToWorkingSet(coltProjectFilePath)

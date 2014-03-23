@@ -89,7 +89,9 @@ def runCOLT(settings, projectPath):
 
         subprocess.Popen(command)                 
 
-def exportProject(window, mainDocumentPath, basedir, launcherType):
+def exportProject(window, mainDocumentPath, basedir, overrides):
+        launcherType = overrides["launcherType"]
+        
         mainDocumentName = ""
         if  mainDocumentPath != "" :
             mainDocumentName = os.path.splitext(os.path.basename(mainDocumentPath))[0]
@@ -133,7 +135,7 @@ def exportProject(window, mainDocumentPath, basedir, launcherType):
             rootElement = parse(coltProjectFilePath).getroot()
             # override launcher type if possible (BROWSER/NODE_WEBKIT)
             oldMain = rootElement.find("build").find("main-document").text
-            if (mainDocumentPath == "") and oldMain.endswith("js") and (launcherType != "NODE_JS") :
+            if (mainDocumentPath == "") and oldMain.endswith(".js") and (launcherType != "NODE_JS") :
                 # can't override NODE_JS
                 return None
                 
@@ -143,8 +145,13 @@ def exportProject(window, mainDocumentPath, basedir, launcherType):
         if (mainDocumentPath != "") :
             rootElement.set("projectName", mainDocumentName)
             rootElement.find("build").find("main-document").text = mainDocumentPath
+            
+            try :
+                rootElement.find("build").find("main-document").text = basedir + os.path.sep + overrides["colt-main-document"]
+            except KeyError :
+                pass
         
-            if not mainDocumentPath.endswith("js") :
+            if not mainDocumentPath.endswith(".js") :
                 settings = sublime.load_settings(ColtPreferences.NAME)
                 browserPathSetting = settings.get("coltBrowserPath", None)
                 if browserPathSetting != None :
