@@ -75,7 +75,10 @@ def runCOLT(settings, projectPath):
         command = []
 
         if platform == "osx" :
-            command.append("open", "-n", "-a", coltPath)
+            command.append("open")
+            command.append("-n")
+            command.append("-a")
+            command.append(coltPath)
         elif platform == "windows" :
                 if not coltPath.endswith('colt.exe') :
                     coltPath += "\\colt.exe"
