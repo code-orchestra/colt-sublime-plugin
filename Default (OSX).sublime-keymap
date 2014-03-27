@@ -1,6 +1,6 @@
 [
 { "keys": ["f10"], "command": "start_colt" },
-{ "keys": ["super+shift+f9"], "command": "run_with_colt", "args": { "nodeJs": "Webkit" } },
+{ "keys": ["super+shift+f8"], "command": "run_with_colt", "args": { "nodeJs": "Webkit" } },
 { "keys": ["super+shift+f10"], "command": "run_with_colt", "args": { "nodeJs": "Browser" } },
 { "keys": ["super+shift+f11"], "command": "run_with_colt", "args": { "nodeJs": "NodeJs" } },
 { "keys": ["super+shift+r"], "command": "colt_reload" },
