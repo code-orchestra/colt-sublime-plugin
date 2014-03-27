@@ -69,14 +69,15 @@ def getSecurityToken():
     return settings.get("securityToken")
 
 def makeNewSecurityToken(newRequest, window):
-    if newRequest :
-        try :
-            requestShortCode()
-        except Exception :
-            sublime.error_message("Authorization request failed. Make sure COLT is active and running.")
-            return
-
-    window.show_input_panel("Enter authorization code displayed in top of COLT window:", "", onShortKeyInput, None, None)
+    onShortKeyInput('42')
+#    if newRequest :
+#        try :
+#            requestShortCode()
+#        except Exception :
+#            sublime.error_message("Authorization request failed. Make sure COLT is active and running.")
+#            return
+#
+#    window.show_input_panel("Enter authorization code displayed in top of COLT window:", "", onShortKeyInput, None, None)
 
 def onShortKeyInput(shortCode):    
     if shortCode :
