@@ -575,6 +575,7 @@ class RunWithColtCommand(AbstractColtRunCommand):
                 
                 # Check the file name
                 file = self.window.active_view().file_name()
+                fileBaseDir = self.getBaseDir(file)
                 
                 coltProjectFilePath = ""
 
@@ -587,6 +588,7 @@ class RunWithColtCommand(AbstractColtRunCommand):
                 # Override some settings using meta tags
                 overrides = {}
                 overrides["launcherType"] = launcherType
+                mainDocOverride = None
                 view = self.window.active_view()
                 viewContent = view.substr(sublime.Region(0, view.size() - 1))
                 metaTags = re.findall("<meta[^>]*>", viewContent, re.DOTALL)
@@ -601,13 +603,19 @@ class RunWithColtCommand(AbstractColtRunCommand):
                             
                             print("Detected override: " + metaName + " -> " + metaContent)
                             overrides[metaName] = metaContent
-
+                            
+                            # CJ-1211: if there's main doc override, remember it
+                            if (metaName == "colt-main-document") :
+                                mainDocOverride = fileBaseDir + os.path.sep + metaContent
+                
+                if mainDocOverride != None :
+                    RunWithColtCommand.html = mainDocOverride
 
                 # Export COLT project
                 if nodeJs == "NodeJs" :
-                    coltProjectFilePath = colt.exportProject(self.window, file, self.getBaseDir(file), overrides)
+                    coltProjectFilePath = colt.exportProject(self.window, file, fileBaseDir, overrides)
                 else :
-                    if re.match('.*\\.html?$', file): # r'' for v3
+                    if re.match('.*\\.html?$', file) and (mainDocOverride is None): # r'' for v3
                         RunWithColtCommand.html = file
 
                     if RunWithColtCommand.html is None :
@@ -625,7 +633,7 @@ class RunWithColtCommand(AbstractColtRunCommand):
                             return
                         else :
                             # override launcher, if possible 
-                            coltProjectFilePath = colt.exportProject(self.window, "", self.getBaseDir(file), overrides)
+                            coltProjectFilePath = colt.exportProject(self.window, "", fileBaseDir, overrides)
                             if coltProjectFilePath is None:
                                 sublime.error_message('This tab is not html file. Please open project main html and try again.')
                                 return
