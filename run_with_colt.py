@@ -297,13 +297,13 @@ class IdleWatcher(sublime_plugin.EventListener):
                     else :
                         # just print it
                         print("[COLT] " + info["message"])
-                        try :
-                            if info["source"] == "License" :
-                                openConsole = True
-                        except KeyError :
-                            # old colt
-                            if re.match("^Maximum updates.*", info["message"]) :
-                                openConsole = True
+                        #try :
+                        #    if info["source"] == "License" :
+                        #        openConsole = True
+                        #except KeyError :
+                        #    # old colt
+                        #    if re.match("^Maximum updates.*", info["message"]) :
+                        #        openConsole = True
                     
                 # now show syntax errors
                 for info in syntaxErrors :
