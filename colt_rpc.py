@@ -58,7 +58,7 @@ def runAfterAuthorization():
 def authorize(window):
     if getSecurityToken() is None :
         makeNewSecurityToken(True, window)
-    else :
+    elif not runAfterAuthorization is None:
         runAfterAuthorization()
 
 def getSecurityToken(): 
@@ -69,14 +69,15 @@ def getSecurityToken():
     return settings.get("securityToken")
 
 def makeNewSecurityToken(newRequest, window):
-    if newRequest :
-        try :
-            requestShortCode()
-        except Exception :
-            sublime.error_message("Authorization request failed. Make sure COLT is active and running.")
-            return
-
-    window.show_input_panel("Enter authorization code displayed in top of COLT window:", "", onShortKeyInput, None, None)
+    onShortKeyInput('42')
+#    if newRequest :
+#        try :
+#            requestShortCode()
+#        except Exception :
+#            sublime.error_message("Authorization request failed. Make sure COLT is active and running.")
+#            return
+#
+#    window.show_input_panel("Enter authorization code displayed in top of COLT window:", "", onShortKeyInput, None, None)
 
 def onShortKeyInput(shortCode):    
     if shortCode :
@@ -187,6 +188,12 @@ def getCallCount(filePath, position, currentContent):
 def resetCallCounts():
     return runRPC(ColtConnection.port, "resetCallCounts", [ getSecurityToken() ])
 
+def getEnclosingTagId(filePath, position, currentContent):
+    return runRPC(ColtConnection.port, "getEnclosingTagId", [ getSecurityToken(), filePath, position, currentContent ])
+
+def findAndShowJavaDocs(filePath, position, currentContent):
+    return runRPC(ColtConnection.port, "findAndShowJavaDocs", [ getSecurityToken(), filePath, position, currentContent ])
+
 def getLastLogMessages():
     return runRPC(ColtConnection.port, "getLastLogMessages", [ getSecurityToken() ])
 
@@ -213,7 +220,7 @@ def initAndConnect(settings, projectPath):
         establishConnection(port)
         return port
 
-    colt.runCOLT(settings)
+    colt.runCOLT(settings, projectPath)
     
     timeout = 20
     while timeout > 0 :

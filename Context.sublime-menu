@@ -1,12 +1,14 @@
 [
     { "caption": "-" },
     { "command": "start_colt", "caption": "Start COLT" },
-    { "command": "run_with_colt", "caption": "Run with COLT", "args": { "nodeJs": "False" } },
-    { "command": "run_with_colt", "caption": "Run with COLT (node.js)", "args": { "nodeJs": "True" } },
+    { "command": "run_with_colt", "caption": "Run with COLT", "args": { "nodeJs": "Browser" } },
+    { "command": "run_with_colt", "caption": "Run with COLT (node.js)", "args": { "nodeJs": "NodeJs" } },
+    { "command": "run_with_colt", "caption": "Run with COLT (node-webkit)", "args": { "nodeJs": "Webkit" } },
     { "command": "colt_reload", "caption": "Reload in COLT" },
 	{ "command": "colt_view_value", "caption": "Show Value in Console" },
 	{ "command": "colt_run_function", "caption": "Execute Function" },
 	{ "command": "colt_view_call_count", "caption": "View Function Call Count" },
 	{ "command": "colt_reset_call_counts", "caption": "Reset All Call Counts" },
+	{ "command": "colt_show_javadoc", "caption": "Show Javadoc" },
 	{ "command": "colt_go_to_declaration", "caption": "Go to Declaration" }
 ]
