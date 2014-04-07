@@ -14,7 +14,7 @@
 		    { "caption": "-" },
 		    { "command": "colt_view_value", "caption": "Show Value in Console" },
 		    { "command": "colt_run_function", "caption": "Execute Function" },
-			{ "command": "colt_show_javadoc", "caption": "Show Javadoc" },
+			{ "command": "colt_show_javadoc", "caption": "Show JSDocs" },
 		    { "command": "colt_go_to_declaration", "caption": "Go to Declaration" },
 			{ "command": "colt_show_last_errors", "caption": "Show Last Errors" }
         ]  
