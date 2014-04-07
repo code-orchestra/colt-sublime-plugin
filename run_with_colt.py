@@ -601,7 +601,7 @@ class RunWithColtCommand(AbstractColtRunCommand):
                         if  metaContentSearch != None :
                             metaContent = metaContentSearch.group(1)
                             
-                            print("Detected override: " + metaName + " -> " + metaContent)
+                            #print("Detected override: " + metaName + " -> " + metaContent)
                             overrides[metaName] = metaContent
                             
                             # CJ-1211: if there's main doc override, remember it
