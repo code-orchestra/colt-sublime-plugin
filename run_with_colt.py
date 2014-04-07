@@ -49,7 +49,7 @@ class ToggleAutosaveCommand(sublime_plugin.ApplicationCommand):
 class ColtAutosaveListener(sublime_plugin.EventListener):
         
         def on_modified(self, view):
-                if colt.isColtFile(view) and colt_rpc.isConnected() and colt_rpc.hasActiveSessions() and isAutosaveEnabled() :
+                if isAutosaveEnabled() :
                         view.run_command("save")
 
 
