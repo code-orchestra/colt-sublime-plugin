@@ -566,7 +566,9 @@ class RunWithColtCommand(AbstractColtRunCommand):
             basedir = os.path.dirname(file)
             folders = self.window.folders()
             if len(folders) > 0:
-                basedir = folders[0]
+                # Only if folders[0] contains basedir
+                if  basedir.find(folders[0]) > -1:
+                    basedir = folders[0]
             return basedir
 
 
