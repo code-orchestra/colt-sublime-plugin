@@ -71,7 +71,7 @@ class ColtCompletitions(sublime_plugin.EventListener):
                         if view.substr(wordStart - 1) == "." :
                                 position = wordStart - 1
                         else :
-                                if re.match ("\s*", view.substr(word)) != None :
+                                if re.match ("\\s*", view.substr(word)) != None :
                                     requestVars = True
                                 else :
                                     return []
@@ -89,10 +89,24 @@ class ColtCompletitions(sublime_plugin.EventListener):
                         return []
 
                 result = response["result"]
+                if result is None :
+                    if re.match("\\.js$", view.file_name()) == None :
+                        line = view.line(position)
+                        before = view.substr(sublime.Region(line.begin(), position))
+                        after = view.substr(sublime.Region(position, line.end()))
+                        if (re.match(".*{{[^{}]*$", before) != None) and (re.match("^[^{}]*}}.*", after)):
+                            try : 
+                                tagId = colt_rpc.getEnclosingTagId(view.file_name(), position, getContent(view))["result"]
+                                print ( "left >" + re.match(".*{{([^{}]*)$", before).group(1) + "<" )
+                                result = colt_rpc.angularExpressionCompletion(tagId, re.match(".*{{([^{}]*)$", before).group(1))["result"]
+                            except KeyError :
+                                pass
+                else :
+                    result = json.loads(result)
+
                 completitions = []
                 if not result is None :
-                        resultJSON = json.loads(result)
-                        for resultStr in resultJSON :
+                        for resultStr in result :
                                 if "{})" in resultStr :
                                         resultStr = resultStr.replace("{})", "")
 

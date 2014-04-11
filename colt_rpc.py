@@ -194,6 +194,9 @@ def getEnclosingTagId(filePath, position, currentContent):
 def findAndShowJavaDocs(filePath, position, currentContent):
     return runRPC(ColtConnection.port, "findAndShowJavaDocs", [ getSecurityToken(), filePath, position, currentContent ])
 
+def angularExpressionCompletion(tagId, leftExpression):
+    return runRPC(ColtConnection.port, "angularExpressionCompletion", [ getSecurityToken(), tagId, leftExpression ])
+
 def getLastLogMessages():
     return runRPC(ColtConnection.port, "getLastLogMessages", [ getSecurityToken() ])
 
