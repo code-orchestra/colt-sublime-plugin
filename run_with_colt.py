@@ -94,13 +94,22 @@ class ColtCompletitions(sublime_plugin.EventListener):
                         line = view.line(position)
                         before = view.substr(sublime.Region(line.begin(), position))
                         after = view.substr(sublime.Region(position, line.end()))
+                        # Between {{ and }}
                         if (re.match(".*{{[^{}]*$", before) != None) and (re.match("^[^{}]*}}.*", after)):
                             try : 
                                 tagId = colt_rpc.getEnclosingTagId(view.file_name(), position, getContent(view))["result"]
-                                print ( "left >" + re.match(".*{{([^{}]*)$", before).group(1) + "<" )
                                 result = colt_rpc.angularExpressionCompletion(tagId, re.match(".*{{([^{}]*)$", before).group(1))["result"]
                             except KeyError :
                                 pass
+                        else :
+                            # Between <...=" and "
+                            if (re.match(".*<[^>]+=\"[^\"]*$", before) != None) and (re.match("^[^\"]*\".*", after)):
+                                try : 
+                                    tagId = colt_rpc.getEnclosingTagId(view.file_name(), position, getContent(view))["result"]
+                                    result = colt_rpc.angularExpressionCompletion(tagId, re.match(".*<[^>]+=\"([^\"]*)$", before).group(1))["result"]
+                                except KeyError :
+                                    pass
+                        
                 else :
                     result = json.loads(result)
 
