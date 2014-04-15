@@ -415,7 +415,13 @@ class ColtGoToDeclarationCommand(sublime_plugin.WindowCommand):
                 resultJSON = colt_rpc.getDeclarationPosition(fileName, position, content)
 
                 if resultJSON.has_key("error") or resultJSON["result"] is None :
-                        # sublime.error_message("Can't find a declaration")
+                    if re.match("\\.js$", view.file_name()) == None :
+                        # try angular declaration feature instead
+                        resultJSON = colt_rpc.angularDirectiveDeclaration(fileName, position, content)
+                        
+                        if resultJSON.has_key("error") or resultJSON["result"] is None :
+                            return
+                    else :
                         return
 
                 row = resultJSON["result"]["optionalRow"]

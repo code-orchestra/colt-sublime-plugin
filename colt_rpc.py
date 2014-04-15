@@ -196,6 +196,9 @@ def findAndShowJavaDocs(filePath, position, currentContent):
 
 def angularExpressionCompletion(tagId, leftExpression):
     return runRPC(ColtConnection.port, "angularExpressionCompletion", [ getSecurityToken(), tagId, leftExpression ])
+    
+def angularDirectiveDeclaration(filePath, position, currentContent):
+    return runRPC(ColtConnection.port, "angularDirectiveDeclaration", [ getSecurityToken(), filePath, position, currentContent ])
 
 def getLastLogMessages():
     return runRPC(ColtConnection.port, "getLastLogMessages", [ getSecurityToken() ])
