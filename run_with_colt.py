@@ -49,7 +49,8 @@ class ToggleAutosaveCommand(sublime_plugin.ApplicationCommand):
 class ColtAutosaveListener(sublime_plugin.EventListener):
         
         def on_modified(self, view):
-                if isAutosaveEnabled() :
+                # only allow in js/html/css/less
+                if isAutosaveEnabled() and (view.file_name() != None) and (re.match(".*\\.(html?|js|css|less)$", view.file_name()) != None) :
                         view.run_command("save")
 
 
