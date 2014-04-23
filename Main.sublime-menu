@@ -4,7 +4,6 @@
         "children":  
         [  
             { "caption": "-" },
-		    { "command": "start_colt", "caption": "Start COLT" },
 		    { "command": "run_with_colt", "caption": "Run with COLT", "args": { "nodeJs": "Browser" } },
 		    { "command": "run_with_colt", "caption": "Run with COLT (node.js)", "args": { "nodeJs": "NodeJs" } },
 		    { "command": "run_with_colt", "caption": "Run with COLT (node-webkit)", "args": { "nodeJs": "Webkit" } },
