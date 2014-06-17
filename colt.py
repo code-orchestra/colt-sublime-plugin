@@ -150,7 +150,10 @@ def exportProject(window, mainDocumentPath, basedir, overrides):
             rootElement.find("build").find("main-document").text = mainDocumentPath
             
             try :
-                rootElement.find("build").find("main-document").text = basedir + os.path.sep + overrides["colt-main-document"]
+                if ("http:" in overrides["colt-main-document"]) :
+                    rootElement.find("build").find("main-document").text = overrides["colt-main-document"]
+                else :
+                    rootElement.find("build").find("main-document").text = basedir + os.path.sep + overrides["colt-main-document"]
             except KeyError :
                 pass
         

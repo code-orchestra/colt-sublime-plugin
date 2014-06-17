@@ -605,7 +605,7 @@ class RunWithColtCommand(AbstractColtRunCommand):
                             overrides[metaName] = metaContent
                             
                             # CJ-1211: if there's main doc override, remember it
-                            if (metaName == "colt-main-document") :
+                            if (metaName == "colt-main-document" and "http:" not in metaContent) :
                                 mainDocOverride = fileBaseDir + os.path.sep + metaContent
                 
                 if mainDocOverride != None :
